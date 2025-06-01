@@ -161,10 +161,19 @@ public class GamePanel extends JLayeredPane {
             }
         }
     }
+                    
+                    // Power-ups are now rendered in the BoardPanel's cell components
 
     public void clearDot(int row, int col) {
         if (row >= 0 && row < board.getHeight() && col >= 0 && col < board.getWidth()) {
             boardPanel.clearDot(row, col);
         }
+    }
+    
+    /**
+     * Gets the board panel
+     */
+    public BoardPanel getBoardPanel() {
+        return boardPanel;
     }
 }

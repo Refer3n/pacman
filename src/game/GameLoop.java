@@ -6,19 +6,21 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import game.ghosts.*;
+import game.powerups.*;
 
-/**
- * Game loop that coordinates game state updates and rendering
- */
 public class GameLoop {
     private static final int FPS = 60;
     private static final int FRAME_DELAY = 1000 / FPS;
 
     private final GamePanel gamePanel;
+    private GameWindow gameWindow;
     private Player player;
-        private PacmanAnimator pacmanAnimator;
-        private GhostAnimator ghostAnimator;
-        private List<Ghost> ghosts = new ArrayList<>();
+    private PacmanAnimator pacmanAnimator;
+    private GhostAnimator ghostAnimator;
+    private List<Ghost> ghosts = new ArrayList<>();
+
+    private PowerUpManager powerUpManager;
+    private PowerUpSpawner powerUpSpawner;
 
     private Thread gameThread;
     private boolean running = false;
@@ -47,7 +49,7 @@ public class GameLoop {
 
             ghostHomeRow = board.getHeight() / 2;
             ghostHomeCol = board.getWidth() / 2;
-    
+
             // Find a position marked with 'G' for ghost house
             for (int row = 0; row < board.getHeight(); row++) {
                 for (int col = 0; col < board.getWidth(); col++) {
@@ -59,23 +61,45 @@ public class GameLoop {
                     }
                 }
             }
-    
+
             // Initialize player
             player = new Player(board, startRow, startCol);
             player.setGamePanel(gamePanel);
             gamePanel.setPlayer(player);
-    
+
             // Initialize ghosts
             initializeGhosts(board, ghostHomeRow, ghostHomeCol);
-            
+
             // Initialize animators
             pacmanAnimator = new PacmanAnimator(player, gamePanel);
             ghostAnimator = new GhostAnimator(ghosts, gamePanel);
+
+                // Initialize power-up system
+                initializePowerUps(board);
     
-            gameThread = new Thread(this::runGameLoop);
-            gameThread.setDaemon(true);
+                gameThread = new Thread(this::runGameLoop);
+                gameThread.setDaemon(true);
+            }
+            
+        /**
+         * Initializes the power-up manager and spawner
+         */
+        private void initializePowerUps(Board board) {
+            // Initialize power-up manager
+            powerUpManager = new game.powerups.PowerUpManager(board);
+            
+            // Connect to the board panel
+            if (gamePanel != null && gamePanel.getBoardPanel() != null) {
+                powerUpManager.setBoardPanel(gamePanel.getBoardPanel());
+            }
+            
+            // Initialize ghost-based power-up spawner
+            if (gamePanel != null && !gamePanel.getGhosts().isEmpty()) {
+                powerUpSpawner = new game.powerups.PowerUpSpawner(
+                    gamePanel.getGhosts(), powerUpManager, board);
+            }
         }
-        
+
         /**
          * Initializes the ghosts for the game
          */
@@ -133,6 +157,11 @@ public class GameLoop {
             pacmanAnimator.start();
             ghostAnimator.start();
     
+            // Start power-up spawner
+            if (powerUpSpawner != null) {
+                powerUpSpawner.start();
+            }
+    
             gameThread.start();
         }
     
@@ -143,6 +172,10 @@ public class GameLoop {
     
             pacmanAnimator.stop();
             ghostAnimator.stop();
+                
+                if (powerUpSpawner != null) {
+                    powerUpSpawner.stop();
+                }
     }
 
     private void update() {
@@ -150,6 +183,9 @@ public class GameLoop {
             
             // Update player
             player.update(currentTime);
+            
+            // Check for power-up collection and apply effects
+            checkAndApplyPowerUps(currentTime);
             
             // Update all ghosts
             for (Ghost ghost : ghosts) {
@@ -169,6 +205,64 @@ public class GameLoop {
             });
         }
         
+    /**
+     * Checks for power-up collection and applies their effects
+     * 
+     * @param currentTime The current game time
+     */
+    private void checkAndApplyPowerUps(long currentTime) {
+        if (powerUpManager == null) return;
+        
+        // Check if the player has collected a power-up
+        PowerUp collectedPowerUp = powerUpManager.checkPowerUpCollection(player);
+        
+        // If a power-up was collected, apply its effect
+        if (collectedPowerUp != null) {
+            // Apply the power-up effect
+            boolean effectApplied = collectedPowerUp.applyEffect(player);
+            
+            if (effectApplied) {
+                // Add to active effects for duration-based power-ups
+                if (collectedPowerUp.getDuration() > 0) {
+                    powerUpManager.activatePowerUp(collectedPowerUp, player);
+                }
+                
+                // Show notification about the power-up
+                String powerUpMessage = "Collected " + collectedPowerUp.getName() + "!";
+                System.out.println(powerUpMessage);
+                
+                // Give points for collecting the power-up
+                if (gameWindow != null) {
+                    int basePoints = 50;
+                    int points = basePoints * player.getScoreMultiplier();
+                    gameWindow.updateScore(points);
+                }
+                
+                // Apply special effects based on power-up type
+                if (collectedPowerUp instanceof GhostKiller) {
+                    // Make all ghosts frightened
+                    for (Ghost ghost : ghosts) {
+                        if (ghost.getCurrentState() != GhostState.IN_HOME && 
+                            ghost.getCurrentState() != GhostState.LEAVING_HOME) {
+                            ghost.frighten();
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Update active power-up effects and check for expired ones
+        List<PowerUp> expiredPowerUps = powerUpManager.updateActiveEffects(player, currentTime);
+        
+        // Handle effects of expired power-ups
+        for (PowerUp expiredPowerUp : expiredPowerUps) {
+            // Special handling for ghost killer expiration
+            if (expiredPowerUp instanceof GhostKiller) {
+                System.out.println("Ghost killer mode expired");
+            }
+        }
+    }
+        
         /**
          * Checks for collisions between player and ghosts
          */
@@ -180,11 +274,33 @@ public class GameLoop {
                 if (Math.abs(ghost.getRow() - playerRow) <= 0 && 
                     Math.abs(ghost.getCol() - playerCol) <= 0) {
 
-                    if (ghost.getCurrentState() == GhostState.FRIGHTENED) {
+                    if (ghost.getCurrentState() == GhostState.FRIGHTENED || player.isGhostKillerMode()) {
                         // Player eats the ghost
                         ghost.reset();
+                        
+                        // Award points for eating ghost
+                        if (gameWindow != null) {
+                            int basePoints = 200;
+                            int points = basePoints * player.getScoreMultiplier();
+                            gameWindow.updateScore(points);
+                        }
                     } else if (ghost.getCurrentState() != GhostState.IN_HOME && 
                                ghost.getCurrentState() != GhostState.LEAVING_HOME) {
+                        // Player loses a life
+                        boolean hasLivesLeft = player.loseLife();
+                        if (!hasLivesLeft) {
+                            // Game over
+                            System.out.println("Game Over!");
+                            if (gameWindow != null) {
+                                gameWindow.showGameOver();
+                            }
+                            stop();
+                        }
+                        
+                        // Reset player power-ups when hit
+                        player.resetPowerUps();
+                        
+                        // Reset positions
                         player.reset(player.getRow(), player.getCol());
                         gamePanel.resetGhosts();
                         break;
@@ -197,10 +313,19 @@ public class GameLoop {
         player.setNextDirection(direction);
     }
 
-    public Player getPlayer() {
+        public Player getPlayer() {
         return player;
     }
 
+        /**
+         * Sets the game window reference for score updates
+         * 
+         * @param gameWindow The game window
+         */
+        public void setGameWindow(GameWindow gameWindow) {
+            this.gameWindow = gameWindow;
+        }
+        
     public synchronized void pause() {
         this.paused = true;
             if (pacmanAnimator != null) {
@@ -208,6 +333,9 @@ public class GameLoop {
             }
             if (ghostAnimator != null) {
                 ghostAnimator.pause();
+            }
+            if (powerUpSpawner != null) {
+                powerUpSpawner.pause();
             }
         }
     
@@ -219,6 +347,10 @@ public class GameLoop {
             }
             if (ghostAnimator != null) {
                 ghostAnimator.resume();
+            }
+            if (powerUpSpawner != null) {
+                powerUpSpawner.resume();
+            }
         }
     }
-}
+

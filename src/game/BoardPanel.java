@@ -95,4 +95,44 @@ public class BoardPanel extends JPanel {
             }
         }
     }
+    
+    /**
+     * Adds a power-up to the board
+     * 
+     * @param row The row position
+     * @param col The column position
+     * @param powerUp The power-up to add
+     */
+    public void addPowerUp(int row, int col, game.powerups.PowerUp powerUp) {
+        if (row >= 0 && row < board.getHeight() && col >= 0 && col < board.getWidth()) {
+            JPanel cellPanel = cellPanels[row][col];
+            
+            if (cellPanel != null) {
+                // Clear any existing content
+                cellPanel.removeAll();
+                
+                // Add the power-up icon
+                JLabel powerUpLabel = new JLabel(powerUp.getIcon());
+                powerUpLabel.setName("powerup");
+                powerUpLabel.setHorizontalAlignment(SwingConstants.CENTER);
+                powerUpLabel.setVerticalAlignment(SwingConstants.CENTER);
+                
+                cellPanel.setLayout(new BorderLayout());
+                cellPanel.add(powerUpLabel, BorderLayout.CENTER);
+                
+                cellPanel.revalidate();
+                cellPanel.repaint();
+            }
+        }
+    }
+    
+    /**
+     * Removes a power-up from the board
+     * 
+     * @param row The row position
+     * @param col The column position
+     */
+    public void removePowerUp(int row, int col) {
+        clearDot(row, col); // Reuse the clearDot method
+    }
 }

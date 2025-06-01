@@ -541,34 +541,6 @@ public abstract class Ghost {
         }
     }
 
-    /**
-     * Checks if the ghost can change direction at the current position
-     */
-    private boolean canChangeDirection() {
-        // If next direction is opposite, can always change
-        if (isOppositeDirection(direction, nextDirection)) {
-            return true;
-        }
-
-        // For other directions, need to be aligned with grid
-        float centerX = col * GamePanel.CELL_SIZE;
-        float centerY = row * GamePanel.CELL_SIZE;
-
-        boolean isAlignedX = Math.abs(pixelX - centerX) < ALIGNMENT_TOLERANCE;
-        boolean isAlignedY = Math.abs(pixelY - centerY) < ALIGNMENT_TOLERANCE;
-
-        // Can change if aligned and the new direction is valid
-        if ((isAlignedX && (nextDirection == UP || nextDirection == DOWN)) ||
-            (isAlignedY && (nextDirection == LEFT || nextDirection == RIGHT))) {
-            return canMove(nextDirection);
-        }
-
-        return false;
-    }
-
-    /**
-     * Gets an array of valid directions the ghost can move
-     */
     private int[] getAvailableDirections() {
         int[] directions = new int[4];
         int count = 0;

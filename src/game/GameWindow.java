@@ -86,6 +86,8 @@ public class GameWindow extends JFrame {
         mainPanel.add(gamePanel, BorderLayout.CENTER);
 
         gameLoop = new GameLoop(board, gamePanel);
+        // Set reference back to this window for score updates
+        gameLoop.setGameWindow(this);
 
         Player player = gameLoop.getPlayer();
         if (player != null) {
@@ -193,5 +195,20 @@ public class GameWindow extends JFrame {
     public void exitToMainMenu() {
         returnToMainMenu = true;
         dispose();
+    }
+    
+    /**
+     * Shows game over message and actions
+     */
+    public void showGameOver() {
+        JOptionPane.showMessageDialog(
+            this,
+            "Game Over! Your final score: " + score,
+            "Game Over",
+            JOptionPane.INFORMATION_MESSAGE
+        );
+        
+        // After clicking OK, return to main menu
+        exitToMainMenu();
     }
 }

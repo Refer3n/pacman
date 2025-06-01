@@ -44,6 +44,12 @@ public class Player {
 
     private boolean isMoving = false;
 
+    // Power-up related fields
+    private float speedMultiplier = 1.0f;
+    private int scoreMultiplier = 1;
+    private int lives = 3;
+    private boolean ghostKillerMode = false;
+    
     public Player(Board board, int startRow, int startCol) {
         this.board = board;
         this.row = startRow;
@@ -229,7 +235,8 @@ public class Player {
     }
 
     private void move(int direction, float deltaTime) {
-        float distance = PLAYER_SPEED * deltaTime;
+        // Apply speed multiplier from power-ups
+        float distance = PLAYER_SPEED * speedMultiplier * deltaTime;
 
         float oldPixelX = pixelX;
         float oldPixelY = pixelY;
@@ -340,6 +347,80 @@ public class Player {
 
     public void updateSprite() {
         updateDirectionIcons();
+    }
+    
+    /**
+     * Sets the speed multiplier for power-ups
+     */
+    public void setSpeedMultiplier(float multiplier) {
+        this.speedMultiplier = multiplier;
+    }
+    
+    /**
+     * Gets the current speed multiplier
+     */
+    public float getSpeedMultiplier() {
+        return speedMultiplier;
+    }
+    
+    /**
+     * Sets the score multiplier for power-ups
+     */
+    public void setScoreMultiplier(int multiplier) {
+        this.scoreMultiplier = multiplier;
+    }
+    
+    /**
+     * Gets the current score multiplier
+     */
+    public int getScoreMultiplier() {
+        return scoreMultiplier;
+    }
+    
+    /**
+     * Adds an extra life
+     */
+    public void addLife() {
+        this.lives++;
+    }
+    
+    /**
+     * Removes a life
+     * @return true if the player still has lives, false if game over
+     */
+    public boolean loseLife() {
+        this.lives--;
+        return lives > 0;
+    }
+    
+    /**
+     * Gets the number of lives
+     */
+    public int getLives() {
+        return lives;
+    }
+    
+    /**
+     * Sets ghost killer mode
+     */
+    public void setGhostKillerMode(boolean enabled) {
+        this.ghostKillerMode = enabled;
+    }
+    
+    /**
+     * Checks if ghost killer mode is active
+     */
+    public boolean isGhostKillerMode() {
+        return ghostKillerMode;
+    }
+    
+    /**
+     * Resets all power-up effects
+     */
+    public void resetPowerUps() {
+        speedMultiplier = 1.0f;
+        scoreMultiplier = 1;
+        ghostKillerMode = false;
     }
 }
 
