@@ -1,5 +1,7 @@
 package menu;
 
+import utils.UIUtils;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -8,16 +10,20 @@ public class MainMenu extends JFrame {
     private JButton newGameButton, highScoresButton, exitButton;
     private JLabel titleLabel;
 
-    public MainMenu() {
-        initializeMenu();
-    }
-
-    private void initializeMenu() {
+    public MainMenu()
+    {
         setTitle("Pacman - Main Menu");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setMinimumSize(new Dimension(600, 400));
         setSize(800, 600);
         setLocationRelativeTo(null);
+
+        initialize();
+
+        setVisible(true);
+    }
+
+    private void initialize() {
         setLayout(new GridBagLayout());
         getContentPane().setBackground(Color.BLACK);
 
@@ -26,9 +32,9 @@ public class MainMenu extends JFrame {
         titleLabel.setFont(new Font("SansSerif", Font.BOLD, 60));
         titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-        newGameButton = createStyledButton("New Game");
-        highScoresButton = createStyledButton("High Scores");
-        exitButton = createStyledButton("Exit");
+        newGameButton = UIUtils.createStyledButton("New Game", 28);
+        highScoresButton = UIUtils.createStyledButton("High Scores", 28);
+        exitButton = UIUtils.createStyledButton("Exit", 28);
 
         newGameButton.addActionListener(e -> {
             new BoardSelection();
@@ -64,33 +70,6 @@ public class MainMenu extends JFrame {
         });
 
         resizeButtons();
-        setVisible(true);
-    }
-
-    private JButton createStyledButton(String text) {
-        JButton btn = new JButton(text);
-        btn.setFont(new Font("SansSerif", Font.BOLD, 28));
-        btn.setBackground(Color.BLACK);
-        btn.setForeground(new Color(255, 200, 0));
-        btn.setFocusPainted(false);
-        btn.setBorder(BorderFactory.createLineBorder(Color.ORANGE, 2));
-
-        btn.setContentAreaFilled(true);
-        btn.setOpaque(true);
-
-        btn.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                btn.setBackground(new Color(30, 30, 30));
-                btn.repaint();
-            }
-
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                btn.setBackground(Color.BLACK);
-                btn.repaint();
-            }
-        });
-
-        return btn;
     }
 
     private void resizeButtons() {
