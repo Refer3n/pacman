@@ -13,7 +13,7 @@ public class ScoreManager {
     private static Score bestScore = null;
 
     public static void addScore(int scoreValue, int timePlayedSeconds) {
-        String playerName = promptForPlayerName();
+        String playerName = promptForPlayerName(scoreValue);
         if (playerName == null || playerName.trim().isEmpty()) {
             playerName = "Anonymous";
         }
@@ -28,10 +28,10 @@ public class ScoreManager {
      * 
      * @return The player's name, or null if canceled
      */
-    private static String promptForPlayerName() {
+    private static String promptForPlayerName(int scoreValue) {
         return JOptionPane.showInputDialog(null, 
                 "Enter your name for the high score:", 
-                "Save Score", 
+                "Save Score, " +scoreValue + " points",
                 JOptionPane.PLAIN_MESSAGE);
     }
 

@@ -1,11 +1,11 @@
-package game.powerups;
+package game.upgrades;
 
 import game.Player;
 
 /**
  * Health restore power-up that gives the player an extra life
  */
-public class HealthRestore extends PowerUp {
+public class HealthRestore extends Upgrade {
     
     /**
      * Creates a new health restore power-up

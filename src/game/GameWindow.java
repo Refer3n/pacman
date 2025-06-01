@@ -1,9 +1,15 @@
 package game;
 
 import board.Board;
+
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import score.ScoreManager;
+import java.io.IOException;
+import javax.imageio.ImageIO;
+import java.io.IOException;
 
 import menu.MainMenu;
 import menu.PauseMenu;
@@ -61,40 +67,128 @@ public class GameWindow extends JFrame {
         this.returnToMainMenu = returnToMainMenu;
     }
     
+    private JLabel livesLabel;
+    private JPanel livesPanel;
+    private JLabel timerLabel;
+    private long startTime;
+    private ImageIcon lifeIcon;
+    
     private void initializeComponents() {
         JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
         mainPanel.setBackground(Color.BLACK);
         mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-
+    
         JLabel titleLabel = new JLabel("PAC-MAN", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         titleLabel.setForeground(Color.YELLOW);
         mainPanel.add(titleLabel, BorderLayout.NORTH);
-
+    
         JPanel infoPanel = new JPanel();
         infoPanel.setBackground(Color.BLACK);
-        infoPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-
+        infoPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 20, 5));
+    
+        // Score display
         scoreLabel = new JLabel("SCORE: 0");
         scoreLabel.setFont(new Font("Arial", Font.BOLD, 16));
         scoreLabel.setForeground(Color.WHITE);
         infoPanel.add(scoreLabel);
         
+        // Timer display
+        timerLabel = new JLabel("TIME: 00:00");
+        timerLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        timerLabel.setForeground(Color.WHITE);
+        infoPanel.add(timerLabel);
+        
+        // Lives display
+        JPanel livesContainer = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        livesContainer.setBackground(Color.BLACK);
+        
+        JLabel livesTextLabel = new JLabel("LIVES: ");
+        livesTextLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        livesTextLabel.setForeground(Color.WHITE);
+        livesContainer.add(livesTextLabel);
+        
+        livesPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 0));
+        livesPanel.setBackground(Color.BLACK);
+        livesContainer.add(livesPanel);
+        
+        // Load life icon (same as health upgrade)
+        Image img = null;
+        try {
+            img = ImageIO.read(getClass().getResourceAsStream("/assets/upgrades/health.png"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        lifeIcon = new ImageIcon(img.getScaledInstance(20, 20, Image.SCALE_SMOOTH));
+        
+        infoPanel.add(livesContainer);
         mainPanel.add(infoPanel, BorderLayout.SOUTH);
-
+    
         gamePanel = new GamePanel(board);
         mainPanel.add(gamePanel, BorderLayout.CENTER);
-
+    
         gameLoop = new GameLoop(board, gamePanel);
         // Set reference back to this window for score updates
         gameLoop.setGameWindow(this);
-
+    
         Player player = gameLoop.getPlayer();
         if (player != null) {
             player.setGamePanel(gamePanel);
+            updateLivesDisplay(player.getLives());
         }
         
+        // Initialize start time for timer
+        startTime = System.currentTimeMillis();
+        
+        // Start a timer to update the display
+        new Thread(this::runTimer).start();
+        
         add(mainPanel);
+    }
+    
+    /**
+     * Updates the lives display with the current number of player lives
+     */
+    public void updateLivesDisplay(int lives) {
+        if (livesPanel != null) {
+            livesPanel.removeAll();
+            
+            for (int i = 0; i < lives; i++) {
+                JLabel lifeLabel = new JLabel(lifeIcon);
+                livesPanel.add(lifeLabel);
+            }
+            
+            livesPanel.revalidate();
+            livesPanel.repaint();
+        }
+    }
+    
+    /**
+     * Runs the timer that updates the time display
+     */
+    private void runTimer() {
+        while (true) {
+            if (!isPaused) {
+                long currentTime = System.currentTimeMillis();
+                long elapsedTime = (currentTime - startTime) / 1000; // Convert to seconds
+                
+                int minutes = (int) (elapsedTime / 60);
+                int seconds = (int) (elapsedTime % 60);
+                
+                String timeString = String.format("TIME: %02d:%02d", minutes, seconds);
+                
+                SwingUtilities.invokeLater(() -> {
+                    timerLabel.setText(timeString);
+                });
+            }
+            
+            try {
+                Thread.sleep(1000); // Update every second
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
     }
     
     private void setupKeyboardControls() {
@@ -198,17 +292,17 @@ public class GameWindow extends JFrame {
     }
     
     /**
-     * Shows game over message and actions
+     * Handles game over, saves score to ScoreManager
      */
     public void showGameOver() {
-        JOptionPane.showMessageDialog(
-            this,
-            "Game Over! Your final score: " + score,
-            "Game Over",
-            JOptionPane.INFORMATION_MESSAGE
-        );
+        // Calculate total time played in seconds
+        long endTime = System.currentTimeMillis();
+        int timePlayedSeconds = (int)((endTime - startTime) / 1000);
         
-        // After clicking OK, return to main menu
+        // Add score to the ScoreManager
+        ScoreManager.addScore(score, timePlayedSeconds);
+        
+        // Return to main menu
         exitToMainMenu();
     }
 }

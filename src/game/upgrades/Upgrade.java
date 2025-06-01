@@ -1,11 +1,8 @@
-package game.powerups;
+package game.upgrades;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
-import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Objects;
 
@@ -15,7 +12,7 @@ import game.Player;
 /**
  * Abstract base class for all power-ups in the game
  */
-public abstract class PowerUp {
+public abstract class Upgrade {
     
     // Position of the power-up
     protected int row;
@@ -41,7 +38,7 @@ public abstract class PowerUp {
      * @param duration How long the power-up effect lasts (in milliseconds), 0 for instant effect
      * @param iconPath Path to the power-up icon in assets
      */
-    public PowerUp(int row, int col, long duration, String iconPath) {
+    public Upgrade(int row, int col, long duration, String iconPath) {
         this.row = row;
         this.col = col;
         this.duration = duration;

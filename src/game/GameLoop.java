@@ -2,11 +2,10 @@ package game;
 
 import board.Board;
 import javax.swing.*;
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import game.ghosts.*;
-import game.powerups.*;
+import game.upgrades.*;
 
 public class GameLoop {
     private static final int FPS = 60;
@@ -19,8 +18,8 @@ public class GameLoop {
     private GhostAnimator ghostAnimator;
     private List<Ghost> ghosts = new ArrayList<>();
 
-    private PowerUpManager powerUpManager;
-    private PowerUpSpawner powerUpSpawner;
+    private UpgradeManager upgradeManager;
+    private UpgradeSpawner upgradeSpawner;
 
     private Thread gameThread;
     private boolean running = false;
@@ -86,17 +85,17 @@ public class GameLoop {
          */
         private void initializePowerUps(Board board) {
             // Initialize power-up manager
-            powerUpManager = new game.powerups.PowerUpManager(board);
+            upgradeManager = new UpgradeManager(board);
             
             // Connect to the board panel
             if (gamePanel != null && gamePanel.getBoardPanel() != null) {
-                powerUpManager.setBoardPanel(gamePanel.getBoardPanel());
+                upgradeManager.setBoardPanel(gamePanel.getBoardPanel());
             }
             
             // Initialize ghost-based power-up spawner
             if (gamePanel != null && !gamePanel.getGhosts().isEmpty()) {
-                powerUpSpawner = new game.powerups.PowerUpSpawner(
-                    gamePanel.getGhosts(), powerUpManager, board);
+                upgradeSpawner = new UpgradeSpawner(
+                    gamePanel.getGhosts(), upgradeManager, board);
             }
         }
 
@@ -158,8 +157,8 @@ public class GameLoop {
             ghostAnimator.start();
     
             // Start power-up spawner
-            if (powerUpSpawner != null) {
-                powerUpSpawner.start();
+            if (upgradeSpawner != null) {
+                upgradeSpawner.start();
             }
     
             gameThread.start();
@@ -173,8 +172,8 @@ public class GameLoop {
             pacmanAnimator.stop();
             ghostAnimator.stop();
                 
-                if (powerUpSpawner != null) {
-                    powerUpSpawner.stop();
+                if (upgradeSpawner != null) {
+                    upgradeSpawner.stop();
                 }
     }
 
@@ -211,24 +210,24 @@ public class GameLoop {
      * @param currentTime The current game time
      */
     private void checkAndApplyPowerUps(long currentTime) {
-        if (powerUpManager == null) return;
+        if (upgradeManager == null) return;
         
         // Check if the player has collected a power-up
-        PowerUp collectedPowerUp = powerUpManager.checkPowerUpCollection(player);
+        Upgrade collectedUpgrade = upgradeManager.checkPowerUpCollection(player);
         
         // If a power-up was collected, apply its effect
-        if (collectedPowerUp != null) {
+        if (collectedUpgrade != null) {
             // Apply the power-up effect
-            boolean effectApplied = collectedPowerUp.applyEffect(player);
+            boolean effectApplied = collectedUpgrade.applyEffect(player);
             
             if (effectApplied) {
                 // Add to active effects for duration-based power-ups
-                if (collectedPowerUp.getDuration() > 0) {
-                    powerUpManager.activatePowerUp(collectedPowerUp, player);
+                if (collectedUpgrade.getDuration() > 0) {
+                    upgradeManager.activatePowerUp(collectedUpgrade, player);
                 }
                 
                 // Show notification about the power-up
-                String powerUpMessage = "Collected " + collectedPowerUp.getName() + "!";
+                String powerUpMessage = "Collected " + collectedUpgrade.getName() + "!";
                 System.out.println(powerUpMessage);
                 
                 // Give points for collecting the power-up
@@ -236,10 +235,15 @@ public class GameLoop {
                     int basePoints = 50;
                     int points = basePoints * player.getScoreMultiplier();
                     gameWindow.updateScore(points);
+                    
+                    // Update lives display if it's a health restore upgrade
+                    if (collectedUpgrade instanceof game.upgrades.HealthRestore) {
+                        gameWindow.updateLivesDisplay(player.getLives());
+                    }
                 }
                 
                 // Apply special effects based on power-up type
-                if (collectedPowerUp instanceof GhostKiller) {
+                if (collectedUpgrade instanceof GhostKiller) {
                     // Make all ghosts frightened
                     for (Ghost ghost : ghosts) {
                         if (ghost.getCurrentState() != GhostState.IN_HOME && 
@@ -252,12 +256,12 @@ public class GameLoop {
         }
         
         // Update active power-up effects and check for expired ones
-        List<PowerUp> expiredPowerUps = powerUpManager.updateActiveEffects(player, currentTime);
+        List<Upgrade> expiredUpgrades = upgradeManager.updateActiveEffects(player, currentTime);
         
         // Handle effects of expired power-ups
-        for (PowerUp expiredPowerUp : expiredPowerUps) {
+        for (Upgrade expiredUpgrade : expiredUpgrades) {
             // Special handling for ghost killer expiration
-            if (expiredPowerUp instanceof GhostKiller) {
+            if (expiredUpgrade instanceof GhostKiller) {
                 System.out.println("Ghost killer mode expired");
             }
         }
@@ -288,6 +292,12 @@ public class GameLoop {
                                ghost.getCurrentState() != GhostState.LEAVING_HOME) {
                         // Player loses a life
                         boolean hasLivesLeft = player.loseLife();
+                        
+                        // Update lives display in game window
+                        if (gameWindow != null) {
+                            gameWindow.updateLivesDisplay(player.getLives());
+                        }
+                        
                         if (!hasLivesLeft) {
                             // Game over
                             System.out.println("Game Over!");
@@ -297,8 +307,9 @@ public class GameLoop {
                             stop();
                         }
                         
-                        // Reset player power-ups when hit
-                        player.resetPowerUps();
+                        if (upgradeManager != null) {
+                            upgradeManager.removeAllUpgrades(false);
+                        }
                         
                         // Reset positions
                         player.reset(player.getRow(), player.getCol());
@@ -334,8 +345,8 @@ public class GameLoop {
             if (ghostAnimator != null) {
                 ghostAnimator.pause();
             }
-            if (powerUpSpawner != null) {
-                powerUpSpawner.pause();
+            if (upgradeSpawner != null) {
+                upgradeSpawner.pause();
             }
         }
     
@@ -348,8 +359,8 @@ public class GameLoop {
             if (ghostAnimator != null) {
                 ghostAnimator.resume();
             }
-            if (powerUpSpawner != null) {
-                powerUpSpawner.resume();
+            if (upgradeSpawner != null) {
+                upgradeSpawner.resume();
             }
         }
     }

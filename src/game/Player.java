@@ -270,6 +270,22 @@ public class Player {
 
                     if (gamePanel != null) {
                         gamePanel.clearDot(row, col);
+                        
+                        // Award points for eating dot
+                        int basePoints = 10;
+                        int points = basePoints * scoreMultiplier;
+                        
+                        // Update score in game window via game panel
+                        if (gamePanel.getParent() instanceof JPanel) {
+                            Component parent = gamePanel.getParent();
+                            while (parent != null) {
+                                if (parent instanceof GameWindow) {
+                                    ((GameWindow) parent).updateScore(points);
+                                    break;
+                                }
+                                parent = parent.getParent();
+                            }
+                        }
                     }
                 }
             } else {
@@ -378,10 +394,12 @@ public class Player {
     }
     
     /**
-     * Adds an extra life
+     * Adds an extra life, up to a maximum of 3
      */
     public void addLife() {
-        this.lives++;
+        if (this.lives < 3) {
+            this.lives++;
+        }
     }
     
     /**

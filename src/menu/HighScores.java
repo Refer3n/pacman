@@ -13,8 +13,6 @@ import java.util.List;
 public class HighScores extends JFrame {
     private boolean redirectToMenu = true;
     private final Color GOLD = new Color(255, 200, 0);
-    private JList<Score> scoresList;
-    private DefaultListModel<Score> scoresModel;
     private JPanel statsPanel;
 
     public HighScores() {
@@ -74,15 +72,15 @@ public class HighScores extends JFrame {
         emptyPanel.setBackground(Color.BLACK);
         emptyPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createLineBorder(GOLD),
-                "Scores",
+                "High Scores",
                 0, 0,
                 new Font("SansSerif", Font.BOLD, 18),
                 GOLD
         ));
         
-        JLabel noScores = new JLabel("No scores available.");
+        JLabel noScores = new JLabel("No scores available yet. Play a game to set a high score!");
         noScores.setForeground(GOLD);
-        noScores.setFont(new Font("SansSerif", Font.PLAIN, 20));
+        noScores.setFont(new Font("SansSerif", Font.PLAIN, 18));
         noScores.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         JButton playBtn = new JButton("Play now", new ImageIcon(getClass().getResource("/assets/icons/play-icon.png")));
@@ -116,22 +114,32 @@ public class HighScores extends JFrame {
         JPanel listPanel = new JPanel(new BorderLayout(0, 10));
         listPanel.setBackground(Color.BLACK);
         
-        // Create list model and populate it
-        scoresModel = new DefaultListModel<>();
+        // Create a simple list model and populate it
+        DefaultListModel<String> listModel = new DefaultListModel<>();
+        
+        // Add header
+        listModel.addElement(String.format("%-25s %-15s %-15s", "Name", "Score", "Time Played"));
+        
+        // Add a separator
+        listModel.addElement("--------------------------------------------------");
+        
+        // Add all scores
         for (Score score : scores) {
-            scoresModel.addElement(score);
+            String formattedScore = String.format("%-25s %-15d %-15s", 
+                score.getPlayerName(),
+                score.getValue(),
+                ScoreManager.formatTime(score.getTimePlayed()));
+            listModel.addElement(formattedScore);
         }
         
-        // Create JList with the model
-        scoresList = new JList<>(scoresModel);
+        // Create JList with the model - non-selectable
+        JList<String> scoresList = new JList<>(listModel);
         scoresList.setBackground(Color.BLACK);
         scoresList.setForeground(GOLD);
-        scoresList.setFont(new Font("SansSerif", Font.PLAIN, 18));
+        scoresList.setFont(new Font("Monospaced", Font.PLAIN, 16));
         scoresList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        scoresList.setFixedCellHeight(30); // Fixed height for each item
-        
-        // Custom renderer for better looking list items
-        scoresList.setCellRenderer(new ScoreListCellRenderer());
+        scoresList.setFixedCellHeight(30);
+        scoresList.setEnabled(false); // Make it non-selectable
         
         // Add the list to a scroll pane
         JScrollPane scrollPane = new JScrollPane(scoresList);
@@ -139,70 +147,19 @@ public class HighScores extends JFrame {
         scrollPane.getViewport().setBackground(Color.BLACK);
         scrollPane.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createLineBorder(GOLD),
-                "Scores",
+                "High Scores",
                 0, 0,
                 new Font("SansSerif", Font.BOLD, 18),
                 GOLD
         ));
         
-        // Create a delete button panel
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        buttonPanel.setBackground(Color.BLACK);
-        
-        JButton deleteButton = new JButton("Delete Selected");
-        deleteButton.setBackground(new Color(180, 40, 40));
-        deleteButton.setForeground(Color.WHITE);
-        deleteButton.setFocusPainted(false);
-        deleteButton.setFont(new Font("SansSerif", Font.BOLD, 14));
-        deleteButton.addActionListener(e -> deleteSelectedScore());
-        
-        buttonPanel.add(deleteButton);
-        
         // Add components to panel
         listPanel.add(scrollPane, BorderLayout.CENTER);
-        listPanel.add(buttonPanel, BorderLayout.SOUTH);
         
         return listPanel;
     }
     
-    private void deleteSelectedScore() {
-        int selectedIndex = scoresList.getSelectedIndex();
-        if (selectedIndex >= 0) {
-            Score selectedScore = scoresModel.getElementAt(selectedIndex);
-            
-            // Confirm deletion
-            int confirm = JOptionPane.showConfirmDialog(
-                this,
-                "Are you sure you want to delete this score?\n" + selectedScore,
-                "Confirm Deletion",
-                JOptionPane.YES_NO_OPTION
-            );
-            
-            if (confirm == JOptionPane.YES_OPTION) {
-                // Delete from model and storage
-                ScoreManager.deleteScore(selectedScore.getId());
-                scoresModel.remove(selectedIndex);
-                
-                // Update stats
-                updateStats();
-                
-                // If all scores deleted, rebuild UI
-                if (scoresModel.isEmpty()) {
-                    getContentPane().removeAll();
-                    initialize();
-                    revalidate();
-                    repaint();
-                }
-            }
-        } else {
-            JOptionPane.showMessageDialog(
-                this,
-                "Please select a score to delete.",
-                "No Selection",
-                JOptionPane.INFORMATION_MESSAGE
-            );
-        }
-    }
+    // Method removed
     
     private void updateStats() {
         if (statsPanel != null) {
@@ -222,36 +179,5 @@ public class HighScores extends JFrame {
         label.setForeground(GOLD);
         label.setFont(new Font("SansSerif", Font.PLAIN, 16));
         panel.add(label);
-    }
-    
-    /**
-     * Custom cell renderer for Score items in the JList
-     */
-    private class ScoreListCellRenderer extends DefaultListCellRenderer {
-        @Override
-        public Component getListCellRendererComponent(JList<?> list, Object value, 
-                int index, boolean isSelected, boolean cellHasFocus) {
-            
-            JLabel label = (JLabel) super.getListCellRendererComponent(
-                    list, value, index, isSelected, cellHasFocus);
-            
-            // Configure appearance
-            label.setBorder(new EmptyBorder(5, 10, 5, 10));
-            
-            if (value instanceof Score) {
-                Score score = (Score) value;
-                label.setText(score.toString());
-            }
-            
-            if (isSelected) {
-                label.setBackground(new Color(60, 60, 120));
-                label.setForeground(Color.WHITE);
-            } else {
-                label.setBackground(Color.BLACK);
-                label.setForeground(GOLD);
-            }
-            
-            return label;
-        }
     }
 }

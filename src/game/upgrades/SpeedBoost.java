@@ -1,11 +1,11 @@
-package game.powerups;
+package game.upgrades;
 
 import game.Player;
 
 /**
  * Speed boost power-up that increases player movement speed
  */
-public class SpeedBoost extends PowerUp {
+public class SpeedBoost extends Upgrade {
     
     // Speed multiplier
     private static final float SPEED_MULTIPLIER = 1.5f;

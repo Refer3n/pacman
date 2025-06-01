@@ -1,11 +1,11 @@
-package game.powerups;
+package game.upgrades;
 
 import game.Player;
 
 /**
  * Ghost killer power-up that allows the player to eat ghosts
  */
-public class GhostKiller extends PowerUp {
+public class GhostKiller extends Upgrade {
     
     /**
      * Creates a new ghost killer power-up

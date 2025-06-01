@@ -1,4 +1,4 @@
-package game.powerups;
+package game.upgrades;
 
 import java.util.List;
 import java.util.Random;
@@ -8,10 +8,7 @@ import board.Board;
 import game.ghosts.Ghost;
 import game.ghosts.GhostState;
 
-/**
- * Manages spawning of power-ups by ghosts
- */
-public class PowerUpSpawner implements Runnable {
+public class UpgradeSpawner implements Runnable {
 
     private static final long SPAWN_CHECK_INTERVAL = 5000;
     private static final float SPAWN_PROBABILITY = 0.25f;
@@ -21,13 +18,13 @@ public class PowerUpSpawner implements Runnable {
     private Thread spawnerThread;
 
     private final List<Ghost> ghosts;
-    private final PowerUpManager powerUpManager;
+    private final UpgradeManager upgradeManager;
     private final Board board;
     private final Random random = new Random();
 
-    public PowerUpSpawner(List<Ghost> ghosts, PowerUpManager powerUpManager, Board board) {
+    public UpgradeSpawner(List<Ghost> ghosts, UpgradeManager upgradeManager, Board board) {
         this.ghosts = ghosts;
-        this.powerUpManager = powerUpManager;
+        this.upgradeManager = upgradeManager;
         this.board = board;
     }
 
@@ -113,8 +110,8 @@ public class PowerUpSpawner implements Runnable {
         return tile == ' ';
     }
 
-    private PowerUp createPowerUpAtPosition(int row, int col) {
+    private Upgrade createPowerUpAtPosition(int row, int col) {
         // Let the PowerUpManager create the power-up
-        return powerUpManager.createPowerUp(row, col);
+        return upgradeManager.createPowerUp(row, col);
     }
 }

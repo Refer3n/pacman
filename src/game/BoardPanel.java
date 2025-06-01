@@ -1,6 +1,8 @@
 package game;
 
 import board.Board;
+import game.upgrades.Upgrade;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
@@ -101,9 +103,9 @@ public class BoardPanel extends JPanel {
      * 
      * @param row The row position
      * @param col The column position
-     * @param powerUp The power-up to add
+     * @param upgrade The power-up to add
      */
-    public void addPowerUp(int row, int col, game.powerups.PowerUp powerUp) {
+    public void addPowerUp(int row, int col, Upgrade upgrade) {
         if (row >= 0 && row < board.getHeight() && col >= 0 && col < board.getWidth()) {
             JPanel cellPanel = cellPanels[row][col];
             
@@ -112,7 +114,7 @@ public class BoardPanel extends JPanel {
                 cellPanel.removeAll();
                 
                 // Add the power-up icon
-                JLabel powerUpLabel = new JLabel(powerUp.getIcon());
+                JLabel powerUpLabel = new JLabel(upgrade.getIcon());
                 powerUpLabel.setName("powerup");
                 powerUpLabel.setHorizontalAlignment(SwingConstants.CENTER);
                 powerUpLabel.setVerticalAlignment(SwingConstants.CENTER);
@@ -132,7 +134,44 @@ public class BoardPanel extends JPanel {
      * @param row The row position
      * @param col The column position
      */
-    public void removePowerUp(int row, int col) {
+    public void removeUpgrade(int row, int col) {
         clearDot(row, col); // Reuse the clearDot method
+    }
+    
+    /**
+     * Refreshes a tile based on the current board state
+     * 
+     * @param row The row position
+     * @param col The column position
+     */
+    public void refreshTile(int row, int col) {
+        if (row >= 0 && row < board.getHeight() && col >= 0 && col < board.getWidth()) {
+            JPanel cellPanel = cellPanels[row][col];
+            
+            if (cellPanel != null) {
+                // Clear any existing content
+                cellPanel.removeAll();
+                
+                // Get the current tile type
+                char tile = board.getTile(row, col);
+                
+                // If it's a dot, add the dot graphic
+                if (tile == '.') {
+                    JLabel dot = new JLabel("•");
+                    dot.setName("dot");
+                    dot.setFont(new Font("SansSerif", Font.PLAIN, 14));
+                    dot.setForeground(Color.WHITE);
+                    dot.setHorizontalAlignment(SwingConstants.CENTER);
+                    dot.setVerticalAlignment(SwingConstants.CENTER);
+                    
+                    cellPanel.setLayout(new BorderLayout());
+                    cellPanel.add(dot, BorderLayout.CENTER);
+                }
+                
+                cellPanel.setBackground(Color.BLACK);
+                cellPanel.revalidate();
+                cellPanel.repaint();
+            }
+        }
     }
 }
