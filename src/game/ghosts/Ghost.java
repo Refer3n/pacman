@@ -593,9 +593,6 @@ public abstract class Ghost {
             return false;
         } 
         else if (currentState == GhostState.LEAVING_HOME) {
-            // When leaving home, handle special movement to exit
-            float exitPixelX = exitCol * GamePanel.CELL_SIZE;
-            float exitPixelY = exitRow * GamePanel.CELL_SIZE;
             
             // Allow movement toward exit
             if ((direction == UP && row >= exitRow) ||
@@ -673,9 +670,6 @@ public abstract class Ghost {
     public float getPixelY() { return pixelY; }
     public GhostState getCurrentState() { return currentState; }
 
-    /**
-     * Resets the ghost to its starting position
-     */
     public void reset() {
         row = homeRow;
         col = homeCol;
@@ -684,13 +678,10 @@ public abstract class Ghost {
         direction = RIGHT;
         nextDirection = RIGHT;
         currentState = GhostState.IN_HOME;
-        stateChangeTime = System.currentTimeMillis() + 3000; // Start leaving after 3 seconds
+        stateChangeTime = System.currentTimeMillis() + 3000;
         updateDirectionIcons();
     }
 
-    /**
-     * Sets the reference to the game panel
-     */
     public void setGamePanel(GamePanel gamePanel) {
         this.gamePanel = gamePanel;
     }

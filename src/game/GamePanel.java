@@ -5,6 +5,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+
+import board.BoardPanel;
 import game.ghosts.Ghost;
 import game.pacman.Pacman;
 

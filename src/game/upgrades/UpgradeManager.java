@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Random;
 
 import board.Board;
-import game.BoardPanel;
+import board.BoardPanel;
 import game.GameWindow;
 import game.pacman.Pacman;
 

@@ -1,6 +1,5 @@
-package game;
+package board;
 
-import board.Board;
 import game.upgrades.Upgrade;
 
 import javax.swing.*;

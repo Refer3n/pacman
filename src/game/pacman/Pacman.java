@@ -45,9 +45,6 @@ public class Pacman {
 
     private static final float ALIGNMENT_TOLERANCE = 6.0f;
 
-    private boolean isMoving = false;
-
-    // Power-up related fields
     private float speedMultiplier = 1.0f;
     private int scoreMultiplier = 1;
     private int lives = 3;
@@ -161,10 +158,8 @@ public class Pacman {
         }
 
         if (canMove(direction)) {
-            isMoving = true;
             move(direction, deltaTime);
         } else {
-            isMoving = false;
             switch (direction) {
                 case RIGHT:
                     pixelX = (col * CELL_SIZE) - 1;
@@ -309,8 +304,6 @@ public class Pacman {
                         pixelY = row * CELL_SIZE;
                         break;
                 }
-
-                isMoving = false;
             }
         }
     }
@@ -340,10 +333,6 @@ public class Pacman {
         return pixelY;
     }
 
-    public int getDirection() {
-        return direction;
-    }
-
     public void reset(int startRow, int startCol) {
         this.row = startRow;
         this.col = startCol;
@@ -351,7 +340,6 @@ public class Pacman {
         this.pixelY = row * CELL_SIZE;
         this.direction = RIGHT;
         this.nextDirection = RIGHT;
-        this.isMoving = false;
 
         long currentTime = System.currentTimeMillis();
         this.lastMoveTime = currentTime;
@@ -364,84 +352,39 @@ public class Pacman {
         this.gamePanel = gamePanel;
     }
 
-    public void updateSprite() {
-        updateDirectionIcons();
-    }
-    
-    /**
-     * Sets the speed multiplier for power-ups
-     */
     public void setSpeedMultiplier(float multiplier) {
         this.speedMultiplier = multiplier;
     }
-    
-    /**
-     * Gets the current speed multiplier
-     */
-    public float getSpeedMultiplier() {
-        return speedMultiplier;
-    }
-    
-    /**
-     * Sets the score multiplier for power-ups
-     */
+
     public void setScoreMultiplier(int multiplier) {
         this.scoreMultiplier = multiplier;
     }
-    
-    /**
-     * Gets the current score multiplier
-     */
+
     public int getScoreMultiplier() {
         return scoreMultiplier;
     }
-    
-    /**
-     * Adds an extra life, up to a maximum of 3
-     */
+
     public void addLife() {
         if (this.lives < 3) {
             this.lives++;
         }
     }
-    
-    /**
-     * Removes a life
-     * @return true if the player still has lives, false if game over
-     */
+
     public boolean loseLife() {
         this.lives--;
         return lives > 0;
     }
-    
-    /**
-     * Gets the number of lives
-     */
+
     public int getLives() {
         return lives;
     }
-    
-    /**
-     * Sets ghost killer mode
-     */
+
     public void setGhostKillerMode(boolean enabled) {
         this.ghostKillerMode = enabled;
     }
-    
-    /**
-     * Checks if ghost killer mode is active
-     */
+
     public boolean isGhostKillerMode() {
         return ghostKillerMode;
     }
-    
-    /**
-     * Resets all power-up effects
-     */
-    public void resetPowerUps() {
-        speedMultiplier = 1.0f;
-        scoreMultiplier = 1;
-        ghostKillerMode = false;
-    }
-}
 
+}
