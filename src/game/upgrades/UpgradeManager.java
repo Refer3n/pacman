@@ -51,7 +51,7 @@ public class UpgradeManager {
 
         upgrades.add(upgrade);
 
-        boardPanel.addPowerUp(row, col, upgrade);
+        boardPanel.addUpgrade(row, col, upgrade);
     }
 
     public Upgrade checkPowerUpCollection(Pacman pacman) {
@@ -108,26 +108,15 @@ public class UpgradeManager {
         }
     }
 
-    public void removeAllUpgrades(boolean fillWithDots) {
+    public void removeAllUpgrades() {
         List<Upgrade> upgradesToRemove = new ArrayList<>(upgrades);
         
         for (Upgrade upgrade : upgradesToRemove) {
             if (!upgrade.isCollected()) {
                 int row = upgrade.getRow();
                 int col = upgrade.getCol();
-                
-                // Remove from board panel
-                if (boardPanel != null) {
-                    boardPanel.removeUpgrade(row, col);
-                }
-                
-                // Optionally replace with a dot
-                if (fillWithDots) {
-                    board.updateTile(row, col, '.');
-                    if (boardPanel != null) {
-                        boardPanel.refreshTile(row, col);
-                    }
-                }
+
+                boardPanel.removeUpgrade(row, col);
             }
         }
 

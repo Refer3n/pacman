@@ -37,15 +37,7 @@ public class GameWindow extends JFrame {
         initializeComponents();
         setupKeyboardControls();
 
-        addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                if (gamePanel != null) {
-                    gamePanel.revalidate();
-                    gamePanel.repaint();
-                }
-            }
-        });
+        setResizable(false);
         
         pack();
         setLocationRelativeTo(null);

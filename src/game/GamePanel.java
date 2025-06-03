@@ -29,44 +29,28 @@ public class GamePanel extends JLayeredPane {
         setBackground(Color.BLACK);
         setOpaque(true);
 
-        setMinimumSize(new Dimension(board.getWidth() * 10, board.getHeight() * 10));
-        setPreferredSize(new Dimension(board.getWidth() * CELL_SIZE, board.getHeight() * CELL_SIZE));
+        int width = board.getWidth() * CELL_SIZE;
+        int height = board.getHeight() * CELL_SIZE;
+        
+        setPreferredSize(new Dimension(width, height));
+        setSize(width, height);
         
         setLayout(null);
-
+    
         initializeBoard();
     }
-
+    
     private void initializeBoard() {
         boardPanel = new BoardPanel(board);
-
-        boardPanel.setBounds(0, 0, getWidth(), getHeight());
+    
+        int width = board.getWidth() * CELL_SIZE;
+        int height = board.getHeight() * CELL_SIZE;
+        boardPanel.setBounds(0, 0, width, height);
         add(boardPanel, Integer.valueOf(BOARD_LAYER));
     
         playerLabel = new JLabel();
         playerLabel.setBounds(0, 0, CELL_SIZE, CELL_SIZE);
         add(playerLabel, Integer.valueOf(PLAYER_LAYER));
-
-        addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentResized(java.awt.event.ComponentEvent e) {
-                boardPanel.setBounds(0, 0, getWidth(), getHeight());
-                boardPanel.revalidate();
-                
-                if (pacman != null) {
-                    float cellWidth = (float) getWidth() / board.getWidth();
-                    float cellHeight = (float) getHeight() / board.getHeight();
-
-                    playerLabel.setSize((int)cellWidth, (int)cellHeight);
-
-                    updatePlayerSprite();
-
-                    updatePlayerPosition();
-                }
-
-                boardPanel.repaint();
-                repaint();
-            }
-        });
     }
 
     public void setPlayer(Pacman pacman) {
@@ -94,9 +78,6 @@ public class GamePanel extends JLayeredPane {
         ghostLabel.setLocation(x, y);
     }
 
-    /**
-     * Gets the list of ghosts
-     */
     public List<Ghost> getGhosts() {
         return ghosts;
     }

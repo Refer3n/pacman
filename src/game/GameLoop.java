@@ -212,7 +212,7 @@ public class GameLoop {
                         stop();
                     }
 
-                    upgradeManager.removeAllUpgrades(false);
+                    upgradeManager.removeAllUpgrades();
                     pacman.reset(playerRow, playerCol);
                     gamePanel.resetGhosts();
                     break;

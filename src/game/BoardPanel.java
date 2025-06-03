@@ -5,8 +5,6 @@ import game.upgrades.Upgrade;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 
 public class BoardPanel extends JPanel {
     private final Board board;
@@ -22,14 +20,6 @@ public class BoardPanel extends JPanel {
         cellPanels = new JPanel[board.getHeight()][board.getWidth()];
         
         initializeBoardComponents();
-
-        addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                revalidate();
-                repaint();
-            }
-        });
     }
 
     private void initializeBoardComponents() {
@@ -54,21 +44,19 @@ public class BoardPanel extends JPanel {
                     boolean hasLeftWall = (col > 0 && isWall[row][col-1]);
 
                     cellPanel = new WallPanel(hasTopWall, hasRightWall, hasBottomWall, hasLeftWall);
-                } else if (tile == 'X') {
+                }
+                else if (tile == 'X') {
                     Color orangeColor = new Color(255, 140, 0);
                     cellPanel = new WallPanel(false, true, false, true, orangeColor);
-                } else if (tile == '.') {
+                }
+                else if (tile == '.') {
                     cellPanel = new JPanel(new BorderLayout(0, 0));
                     cellPanel.setBackground(Color.BLACK);
 
-                    JLabel dot = new JLabel("•");
-                    dot.setName("dot");
-                    dot.setFont(new Font("SansSerif", Font.PLAIN, 14));
-                    dot.setForeground(Color.WHITE);
-                    dot.setHorizontalAlignment(SwingConstants.CENTER);
-                    dot.setVerticalAlignment(SwingConstants.CENTER);
+                    JLabel dot = getDotLabel();
                     cellPanel.add(dot, BorderLayout.CENTER);
-                } else {
+                }
+                else {
                     cellPanel = new JPanel(new BorderLayout(0, 0));
                     cellPanel.setBackground(Color.BLACK);
                 }
@@ -96,81 +84,38 @@ public class BoardPanel extends JPanel {
             }
         }
     }
-    
-    /**
-     * Adds a power-up to the board
-     * 
-     * @param row The row position
-     * @param col The column position
-     * @param upgrade The power-up to add
-     */
-    public void addPowerUp(int row, int col, Upgrade upgrade) {
+
+    public void addUpgrade (int row, int col, Upgrade upgrade) {
         if (row >= 0 && row < board.getHeight() && col >= 0 && col < board.getWidth()) {
             JPanel cellPanel = cellPanels[row][col];
             
             if (cellPanel != null) {
-                // Clear any existing content
                 cellPanel.removeAll();
-                
-                // Add the power-up icon
-                JLabel powerUpLabel = new JLabel(upgrade.getIcon());
-                powerUpLabel.setName("powerup");
-                powerUpLabel.setHorizontalAlignment(SwingConstants.CENTER);
-                powerUpLabel.setVerticalAlignment(SwingConstants.CENTER);
+
+                JLabel upgradeLabel = new JLabel(upgrade.getIcon());
+                upgradeLabel.setHorizontalAlignment(SwingConstants.CENTER);
+                upgradeLabel.setVerticalAlignment(SwingConstants.CENTER);
                 
                 cellPanel.setLayout(new BorderLayout());
-                cellPanel.add(powerUpLabel, BorderLayout.CENTER);
+                cellPanel.add(upgradeLabel, BorderLayout.CENTER);
                 
                 cellPanel.revalidate();
                 cellPanel.repaint();
             }
         }
     }
-    
-    /**
-     * Removes a power-up from the board
-     * 
-     * @param row The row position
-     * @param col The column position
-     */
+
     public void removeUpgrade(int row, int col) {
-        clearDot(row, col); // Reuse the clearDot method
+        clearDot(row, col);
     }
-    
-    /**
-     * Refreshes a tile based on the current board state
-     * 
-     * @param row The row position
-     * @param col The column position
-     */
-    public void refreshTile(int row, int col) {
-        if (row >= 0 && row < board.getHeight() && col >= 0 && col < board.getWidth()) {
-            JPanel cellPanel = cellPanels[row][col];
-            
-            if (cellPanel != null) {
-                // Clear any existing content
-                cellPanel.removeAll();
-                
-                // Get the current tile type
-                char tile = board.getTile(row, col);
-                
-                // If it's a dot, add the dot graphic
-                if (tile == '.') {
-                    JLabel dot = new JLabel("•");
-                    dot.setName("dot");
-                    dot.setFont(new Font("SansSerif", Font.PLAIN, 14));
-                    dot.setForeground(Color.WHITE);
-                    dot.setHorizontalAlignment(SwingConstants.CENTER);
-                    dot.setVerticalAlignment(SwingConstants.CENTER);
-                    
-                    cellPanel.setLayout(new BorderLayout());
-                    cellPanel.add(dot, BorderLayout.CENTER);
-                }
-                
-                cellPanel.setBackground(Color.BLACK);
-                cellPanel.revalidate();
-                cellPanel.repaint();
-            }
-        }
+
+    private JLabel getDotLabel() {
+        JLabel dot = new JLabel("•");
+        dot.setName("dot");
+        dot.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        dot.setForeground(Color.WHITE);
+        dot.setHorizontalAlignment(SwingConstants.CENTER);
+        dot.setVerticalAlignment(SwingConstants.CENTER);
+        return dot;
     }
 }
