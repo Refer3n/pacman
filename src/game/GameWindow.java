@@ -1,248 +1,188 @@
 package game;
 
 import board.Board;
+import game.pacman.Pacman;
+import menu.MainMenu;
+import menu.PauseMenu;
+import score.ScoreManager;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-
-import game.pacman.Pacman;
-import score.ScoreManager;
 import java.io.IOException;
-
-import menu.MainMenu;
-import menu.PauseMenu;
 
 public class GameWindow extends JFrame {
     private final Board board;
-    private boolean returnToMainMenu = true;
     private GameLoop gameLoop;
     private GamePanel gamePanel;
+
     private JLabel scoreLabel;
+    private JLabel timerLabel;
+    private JPanel livesPanel;
+
+    private ImageIcon lifeIcon;
+
     private int score = 0;
     private boolean isPaused = false;
-
-    private JPanel livesPanel;
-    private JLabel timerLabel;
     private long startTime;
-    private ImageIcon lifeIcon;
-    
+
     public GameWindow(Board board) {
         this.board = board;
-        
         setTitle("Pacman Game");
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        
+        setResizable(false);
+
         initializeComponents();
         setupKeyboardControls();
 
-        setResizable(false);
-        
         pack();
         setLocationRelativeTo(null);
         setVisible(true);
 
         gameLoop.start();
-        
+
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosed(WindowEvent e) {
-                if (gameLoop != null) {
-                    gameLoop.stop();
-                }
-                
-                if (returnToMainMenu) {
-                    new MainMenu();
-                }
+                if (gameLoop != null) gameLoop.stop();
+                new MainMenu();
             }
         });
     }
-    
+
     private void initializeComponents() {
         JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
         mainPanel.setBackground(Color.BLACK);
         mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-    
+
         JLabel titleLabel = new JLabel("PAC-MAN", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         titleLabel.setForeground(Color.YELLOW);
         mainPanel.add(titleLabel, BorderLayout.NORTH);
-    
-        JPanel infoPanel = new JPanel();
+
+        JPanel infoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 5));
         infoPanel.setBackground(Color.BLACK);
-        infoPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 20, 5));
-    
-        // Score display
-        scoreLabel = new JLabel("SCORE: 0");
-        scoreLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        scoreLabel.setForeground(Color.WHITE);
+
+        scoreLabel = createLabel("SCORE: 0");
+        timerLabel = createLabel("TIME: 00:00");
+
         infoPanel.add(scoreLabel);
-        
-        // Timer display
-        timerLabel = new JLabel("TIME: 00:00");
-        timerLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        timerLabel.setForeground(Color.WHITE);
         infoPanel.add(timerLabel);
-        
-        // Lives display
+        infoPanel.add(createLivesDisplay());
+
+        mainPanel.add(infoPanel, BorderLayout.SOUTH);
+
+        gamePanel = new GamePanel(board);
+        mainPanel.add(gamePanel, BorderLayout.CENTER);
+
+        gameLoop = new GameLoop(board, gamePanel);
+        gameLoop.setGameWindow(this);
+
+        Pacman pacman = gameLoop.getPlayer();
+        pacman.setGamePanel(gamePanel);
+
+        loadLifeIcon();
+        updateLivesDisplay(pacman.getLives());
+
+        startTime = System.currentTimeMillis();
+        new Thread(this::runTimer).start();
+
+        add(mainPanel);
+    }
+
+    private JLabel createLabel(String text) {
+        JLabel label = new JLabel(text);
+        label.setFont(new Font("Arial", Font.BOLD, 16));
+        label.setForeground(Color.WHITE);
+        return label;
+    }
+
+    private JPanel createLivesDisplay() {
         JPanel livesContainer = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
         livesContainer.setBackground(Color.BLACK);
-        
-        JLabel livesTextLabel = new JLabel("LIVES: ");
-        livesTextLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        livesTextLabel.setForeground(Color.WHITE);
-        livesContainer.add(livesTextLabel);
-        
+
+        JLabel livesText = createLabel("LIVES: ");
+        livesContainer.add(livesText);
+
         livesPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 0));
         livesPanel.setBackground(Color.BLACK);
         livesContainer.add(livesPanel);
 
-        Image img = null;
-        try {
-            img = ImageIO.read(getClass().getResourceAsStream("/assets/upgrades/health.png"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        lifeIcon = new ImageIcon(img.getScaledInstance(20, 20, Image.SCALE_SMOOTH));
-        
-        infoPanel.add(livesContainer);
-        mainPanel.add(infoPanel, BorderLayout.SOUTH);
-    
-        gamePanel = new GamePanel(board);
-        mainPanel.add(gamePanel, BorderLayout.CENTER);
-    
-        gameLoop = new GameLoop(board, gamePanel);
-        // Set reference back to this window for score updates
-        gameLoop.setGameWindow(this);
-    
-        Pacman pacman = gameLoop.getPlayer();
-        if (pacman != null) {
-            pacman.setGamePanel(gamePanel);
-            updateLivesDisplay(pacman.getLives());
-        }
-        
-        // Initialize start time for timer
-        startTime = System.currentTimeMillis();
-        
-        // Start a timer to update the display
-        new Thread(this::runTimer).start();
-        
-        add(mainPanel);
+        return livesContainer;
     }
-    
-    /**
-     * Updates the lives display with the current number of player lives
-     */
-    public void updateLivesDisplay(int lives) {
-        if (livesPanel != null) {
-            livesPanel.removeAll();
-            
-            for (int i = 0; i < lives; i++) {
-                JLabel lifeLabel = new JLabel(lifeIcon);
-                livesPanel.add(lifeLabel);
-            }
-            
-            livesPanel.revalidate();
-            livesPanel.repaint();
+
+    private void loadLifeIcon() {
+        try {
+            Image img = ImageIO.read(getClass().getResourceAsStream("/assets/upgrades/health.png"));
+            lifeIcon = new ImageIcon(img.getScaledInstance(20, 20, Image.SCALE_SMOOTH));
+        } catch (IOException e) {
+            throw new RuntimeException("Could not load life icon image", e);
         }
+    }
+
+    public void updateLivesDisplay(int lives) {
+        livesPanel.removeAll();
+
+        for (int i = 0; i < lives; i++) {
+            livesPanel.add(new JLabel(lifeIcon));
+        }
+
+        livesPanel.revalidate();
+        livesPanel.repaint();
     }
 
     private void runTimer() {
         while (true) {
             if (!isPaused) {
-                long currentTime = System.currentTimeMillis();
-                long elapsedTime = (currentTime - startTime) / 1000;
-                
-                int minutes = (int) (elapsedTime / 60);
-                int seconds = (int) (elapsedTime % 60);
-                
-                String timeString = String.format("TIME: %02d:%02d", minutes, seconds);
-                
-                SwingUtilities.invokeLater(() -> {
-                    timerLabel.setText(timeString);
-                });
+                long elapsed = (System.currentTimeMillis() - startTime) / 1000;
+                String time = String.format("TIME: %02d:%02d", elapsed / 60, elapsed % 60);
+                SwingUtilities.invokeLater(() -> timerLabel.setText(time));
             }
-            
+
             try {
-                Thread.sleep(1000); // Update every second
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
             }
         }
     }
-    
-    private void setupKeyboardControls() {
-        int condition = JComponent.WHEN_IN_FOCUSED_WINDOW;
-        InputMap inputMap = getRootPane().getInputMap(condition);
-        ActionMap actionMap = getRootPane().getActionMap();
 
-        String upAction = "move_up";
-        String rightAction = "move_right";
-        String downAction = "move_down";
-        String leftAction = "move_left";
-            String pauseAction = "pause_game";
-    
-            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), upAction);
-            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_W, 0), upAction);
-            
-            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), rightAction);
-            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_D, 0), rightAction);
-            
-            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), downAction);
-            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, 0), downAction);
-            
-            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), leftAction);
-            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, 0), leftAction);
-            
-            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), pauseAction);
-            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_P, 0), pauseAction);
-    
-            actionMap.put(upAction, new AbstractAction() {
-                @Override
-                public void actionPerformed(java.awt.event.ActionEvent e) {
-                    gameLoop.handleInput(Pacman.UP);
-                }
-            });
-            
-            actionMap.put(rightAction, new AbstractAction() {
-                @Override
-                public void actionPerformed(java.awt.event.ActionEvent e) {
-                    gameLoop.handleInput(Pacman.RIGHT);
-                }
-            });
-            
-            actionMap.put(downAction, new AbstractAction() {
-                @Override
-                public void actionPerformed(java.awt.event.ActionEvent e) {
-                    gameLoop.handleInput(Pacman.DOWN);
-                }
-            });
-            
-            actionMap.put(leftAction, new AbstractAction() {
-                @Override
-                public void actionPerformed(java.awt.event.ActionEvent e) {
-                    gameLoop.handleInput(Pacman.LEFT);
-                }
-            });
-            
-            actionMap.put(pauseAction, new AbstractAction() {
-                @Override
-                public void actionPerformed(java.awt.event.ActionEvent e) {
-                    togglePause();
-                }
-            });
+    private void setupKeyboardControls() {
+        InputMap input = getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap actions = getRootPane().getActionMap();
+
+        bindKey(input, actions, KeyEvent.VK_UP, "up", () -> gameLoop.handleInput(Pacman.UP));
+        bindKey(input, actions, KeyEvent.VK_W, "up", () -> gameLoop.handleInput(Pacman.UP));
+        bindKey(input, actions, KeyEvent.VK_RIGHT, "right", () -> gameLoop.handleInput(Pacman.RIGHT));
+        bindKey(input, actions, KeyEvent.VK_D, "right", () -> gameLoop.handleInput(Pacman.RIGHT));
+        bindKey(input, actions, KeyEvent.VK_DOWN, "down", () -> gameLoop.handleInput(Pacman.DOWN));
+        bindKey(input, actions, KeyEvent.VK_S, "down", () -> gameLoop.handleInput(Pacman.DOWN));
+        bindKey(input, actions, KeyEvent.VK_LEFT, "left", () -> gameLoop.handleInput(Pacman.LEFT));
+        bindKey(input, actions, KeyEvent.VK_A, "left", () -> gameLoop.handleInput(Pacman.LEFT));
+        bindKey(input, actions, KeyEvent.VK_ESCAPE, "pause", this::togglePause);
+        bindKey(input, actions, KeyEvent.VK_P, "pause", this::togglePause);
 
         setFocusable(true);
         requestFocusInWindow();
+    }
+
+    private void bindKey(InputMap map, ActionMap actions, int keyCode, String name, Runnable action) {
+        KeyStroke keyStroke = KeyStroke.getKeyStroke(keyCode, 0);
+        map.put(keyStroke, name);
+        actions.put(name, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                action.run();
+            }
+        });
     }
 
     public void updateScore(int points) {
         score += points;
         scoreLabel.setText("SCORE: " + score);
     }
-    
 
     public void togglePause() {
         if (isPaused) {
@@ -253,38 +193,26 @@ public class GameWindow extends JFrame {
     }
 
     private void pauseGame() {
-        if (!isPaused) {
-            isPaused = true;
-            gameLoop.pause();
-            new PauseMenu(this);
-        }
+        isPaused = true;
+        gameLoop.pause();
+        new PauseMenu(this);
     }
 
     public void resumeGame() {
-        if (isPaused) {
-            isPaused = false;
-            gameLoop.resume();
-            requestFocusInWindow();
-        }
+        isPaused = false;
+        gameLoop.resume();
+        requestFocusInWindow();
+    }
+
+    public void showGameOver() {
+        long endTime = System.currentTimeMillis();
+        int duration = (int) ((endTime - startTime) / 1000);
+
+        ScoreManager.addScore(score, duration);
+        exitToMainMenu();
     }
 
     public void exitToMainMenu() {
-        returnToMainMenu = true;
         dispose();
-    }
-    
-    /**
-     * Handles game over, saves score to ScoreManager
-     */
-    public void showGameOver() {
-        // Calculate total time played in seconds
-        long endTime = System.currentTimeMillis();
-        int timePlayedSeconds = (int)((endTime - startTime) / 1000);
-        
-        // Add score to the ScoreManager
-        ScoreManager.addScore(score, timePlayedSeconds);
-        
-        // Return to main menu
-        exitToMainMenu();
     }
 }
