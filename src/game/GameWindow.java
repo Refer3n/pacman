@@ -6,9 +6,9 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+
+import game.pacman.Pacman;
 import score.ScoreManager;
-import java.io.IOException;
-import javax.imageio.ImageIO;
 import java.io.IOException;
 
 import menu.MainMenu;
@@ -22,6 +22,11 @@ public class GameWindow extends JFrame {
     private JLabel scoreLabel;
     private int score = 0;
     private boolean isPaused = false;
+
+    private JPanel livesPanel;
+    private JLabel timerLabel;
+    private long startTime;
+    private ImageIcon lifeIcon;
     
     public GameWindow(Board board) {
         this.board = board;
@@ -62,17 +67,6 @@ public class GameWindow extends JFrame {
         });
     }
     
-    public GameWindow(Board board, boolean returnToMainMenu) {
-        this(board);
-        this.returnToMainMenu = returnToMainMenu;
-    }
-    
-    private JLabel livesLabel;
-    private JPanel livesPanel;
-    private JLabel timerLabel;
-    private long startTime;
-    private ImageIcon lifeIcon;
-    
     private void initializeComponents() {
         JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
         mainPanel.setBackground(Color.BLACK);
@@ -111,8 +105,7 @@ public class GameWindow extends JFrame {
         livesPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 0));
         livesPanel.setBackground(Color.BLACK);
         livesContainer.add(livesPanel);
-        
-        // Load life icon (same as health upgrade)
+
         Image img = null;
         try {
             img = ImageIO.read(getClass().getResourceAsStream("/assets/upgrades/health.png"));
@@ -131,10 +124,10 @@ public class GameWindow extends JFrame {
         // Set reference back to this window for score updates
         gameLoop.setGameWindow(this);
     
-        Player player = gameLoop.getPlayer();
-        if (player != null) {
-            player.setGamePanel(gamePanel);
-            updateLivesDisplay(player.getLives());
+        Pacman pacman = gameLoop.getPlayer();
+        if (pacman != null) {
+            pacman.setGamePanel(gamePanel);
+            updateLivesDisplay(pacman.getLives());
         }
         
         // Initialize start time for timer
@@ -162,15 +155,12 @@ public class GameWindow extends JFrame {
             livesPanel.repaint();
         }
     }
-    
-    /**
-     * Runs the timer that updates the time display
-     */
+
     private void runTimer() {
         while (true) {
             if (!isPaused) {
                 long currentTime = System.currentTimeMillis();
-                long elapsedTime = (currentTime - startTime) / 1000; // Convert to seconds
+                long elapsedTime = (currentTime - startTime) / 1000;
                 
                 int minutes = (int) (elapsedTime / 60);
                 int seconds = (int) (elapsedTime % 60);
@@ -220,28 +210,28 @@ public class GameWindow extends JFrame {
             actionMap.put(upAction, new AbstractAction() {
                 @Override
                 public void actionPerformed(java.awt.event.ActionEvent e) {
-                    gameLoop.handleInput(Player.UP);
+                    gameLoop.handleInput(Pacman.UP);
                 }
             });
             
             actionMap.put(rightAction, new AbstractAction() {
                 @Override
                 public void actionPerformed(java.awt.event.ActionEvent e) {
-                    gameLoop.handleInput(Player.RIGHT);
+                    gameLoop.handleInput(Pacman.RIGHT);
                 }
             });
             
             actionMap.put(downAction, new AbstractAction() {
                 @Override
                 public void actionPerformed(java.awt.event.ActionEvent e) {
-                    gameLoop.handleInput(Player.DOWN);
+                    gameLoop.handleInput(Pacman.DOWN);
                 }
             });
             
             actionMap.put(leftAction, new AbstractAction() {
                 @Override
                 public void actionPerformed(java.awt.event.ActionEvent e) {
-                    gameLoop.handleInput(Player.LEFT);
+                    gameLoop.handleInput(Pacman.LEFT);
                 }
             });
             

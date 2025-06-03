@@ -1,6 +1,6 @@
 package game.upgrades;
 
-import game.Player;
+import game.pacman.Pacman;
 
 /**
  * Ghost killer power-up that allows the player to eat ghosts
@@ -18,16 +18,16 @@ public class GhostKiller extends Upgrade {
     }
     
     @Override
-    public boolean applyEffect(Player player) {
+    public boolean applyEffect(Pacman pacman) {
         // Enable ghost-eating mode
-        player.setGhostKillerMode(true);
+        pacman.setGhostKillerMode(true);
         return true;
     }
     
     @Override
-    public void removeEffect(Player player) {
+    public void removeEffect(Pacman pacman) {
         // Disable ghost-eating mode
-        player.setGhostKillerMode(false);
+        pacman.setGhostKillerMode(false);
     }
     
     @Override

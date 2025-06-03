@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.Objects;
 
 import game.GamePanel;
-import game.Player;
+import game.pacman.Pacman;
 
 /**
  * Abstract base class for all power-ups in the game
@@ -55,14 +55,14 @@ public abstract class Upgrade {
     /**
      * Creates a default icon if the image couldn't be loaded
      */
-    public abstract boolean applyEffect(Player player);
+    public abstract boolean applyEffect(Pacman pacman);
     
     /**
      * Remove the power-up effect from the player
      * 
-     * @param player The player to remove the effect from
+     * @param pacman The player to remove the effect from
      */
-    public abstract void removeEffect(Player player);
+    public abstract void removeEffect(Pacman pacman);
     
     /**
      * Get the row position

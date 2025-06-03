@@ -4,7 +4,6 @@ import score.Score;
 import score.ScoreManager;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -126,9 +125,9 @@ public class HighScores extends JFrame {
         // Add all scores
         for (Score score : scores) {
             String formattedScore = String.format("%-25s %-15d %-15s", 
-                score.getPlayerName(),
-                score.getValue(),
-                ScoreManager.formatTime(score.getTimePlayed()));
+                score.playerName(),
+                score.value(),
+                ScoreManager.formatTime(score.timePlayed()));
             listModel.addElement(formattedScore);
         }
         

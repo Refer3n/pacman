@@ -1,4 +1,6 @@
-package game;
+package game.pacman;
+
+import game.GamePanel;
 
 import javax.swing.*;
 
@@ -6,15 +8,15 @@ public class PacmanAnimator implements Runnable {
     private static final int ANIMATION_FRAMES = 3;
     private static final long FRAME_DELAY = 80;
     
-    private final Player player;
+    private final Pacman player;
     private final GamePanel gamePanel;
     private boolean running = false;
     private boolean paused = false;
     private Thread animationThread;
     private int currentFrame = 0;
     
-    public PacmanAnimator(Player player, GamePanel gamePanel) {
-        this.player = player;
+    public PacmanAnimator(Pacman pacman, GamePanel gamePanel) {
+        this.player = pacman;
         this.gamePanel = gamePanel;
     }
 

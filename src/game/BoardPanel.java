@@ -9,10 +9,9 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 
 public class BoardPanel extends JPanel {
-    private static final int CELL_SIZE = 30;
     private final Board board;
 
-    private JPanel[][] cellPanels;
+    private final JPanel[][] cellPanels;
 
     public BoardPanel(Board board) {
         this.board = board;

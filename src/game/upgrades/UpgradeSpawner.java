@@ -110,8 +110,7 @@ public class UpgradeSpawner implements Runnable {
         return tile == ' ';
     }
 
-    private Upgrade createPowerUpAtPosition(int row, int col) {
-        // Let the PowerUpManager create the power-up
-        return upgradeManager.createPowerUp(row, col);
+    private void createPowerUpAtPosition(int row, int col) {
+        upgradeManager.createPowerUp(row, col);
     }
 }

@@ -1,6 +1,6 @@
 package game.upgrades;
 
-import game.Player;
+import game.pacman.Pacman;
 
 /**
  * Speed boost power-up that increases player movement speed
@@ -21,16 +21,16 @@ public class SpeedBoost extends Upgrade {
     }
     
     @Override
-    public boolean applyEffect(Player player) {
+    public boolean applyEffect(Pacman pacman) {
         // Increase the player's speed
-        player.setSpeedMultiplier(SPEED_MULTIPLIER);
+        pacman.setSpeedMultiplier(SPEED_MULTIPLIER);
         return true;
     }
     
     @Override
-    public void removeEffect(Player player) {
+    public void removeEffect(Pacman pacman) {
         // Reset the player's speed
-        player.setSpeedMultiplier(1.0f);
+        pacman.setSpeedMultiplier(1.0f);
     }
     
     @Override

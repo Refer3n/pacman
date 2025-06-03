@@ -1,6 +1,6 @@
 package game.upgrades;
 
-import game.Player;
+import game.pacman.Pacman;
 
 public class DoubleScore extends Upgrade {
 
@@ -11,14 +11,14 @@ public class DoubleScore extends Upgrade {
     }
     
     @Override
-    public boolean applyEffect(Player player) {
-        player.setScoreMultiplier(SCORE_MULTIPLIER);
+    public boolean applyEffect(Pacman pacman) {
+        pacman.setScoreMultiplier(SCORE_MULTIPLIER);
         return true;
     }
     
     @Override
-    public void removeEffect(Player player) {
-        player.setScoreMultiplier(1);
+    public void removeEffect(Pacman pacman) {
+        pacman.setScoreMultiplier(1);
     }
     
     @Override

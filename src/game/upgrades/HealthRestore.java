@@ -1,6 +1,6 @@
 package game.upgrades;
 
-import game.Player;
+import game.pacman.Pacman;
 
 /**
  * Health restore power-up that gives the player an extra life
@@ -18,14 +18,14 @@ public class HealthRestore extends Upgrade {
     }
     
     @Override
-    public boolean applyEffect(Player player) {
+    public boolean applyEffect(Pacman pacman) {
         // Add an extra life
-        player.addLife();
+        pacman.addLife();
         return true;
     }
     
     @Override
-    public void removeEffect(Player player) {
+    public void removeEffect(Pacman pacman) {
         // No need to remove effect for instant power-ups
     }
     

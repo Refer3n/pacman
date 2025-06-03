@@ -1,6 +1,9 @@
-package game;
+package game.pacman;
 
 import board.Board;
+import game.GamePanel;
+import game.GameWindow;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -9,7 +12,7 @@ import java.util.Objects;
 import javax.imageio.ImageIO;
 
 
-public class Player {
+public class Pacman {
     public static final int RIGHT = 0;
     public static final int DOWN = 1;
     public static final int LEFT = 2;
@@ -50,7 +53,7 @@ public class Player {
     private int lives = 3;
     private boolean ghostKillerMode = false;
     
-    public Player(Board board, int startRow, int startCol) {
+    public Pacman(Board board, int startRow, int startCol) {
         this.board = board;
         this.row = startRow;
         this.col = startCol;

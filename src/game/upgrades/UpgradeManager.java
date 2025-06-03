@@ -10,7 +10,7 @@ import java.util.Random;
 import board.Board;
 import game.BoardPanel;
 import game.GameWindow;
-import game.Player;
+import game.pacman.Pacman;
 
 
 public class UpgradeManager {
@@ -31,59 +31,36 @@ public class UpgradeManager {
         this.boardPanel = boardPanel;
     }
 
-    public Upgrade createPowerUp(int row, int col) {
+    public void createPowerUp(int row, int col) {
         for (Upgrade upgrade : upgrades) {
             if (!upgrade.isCollected() && upgrade.getRow() == row && upgrade.getCol() == col) {
-                return null;
+                return;
             }
         }
-        
-        // Create a random power-up
+
         Upgrade upgrade;
         int powerUpType = random.nextInt(4);
-        
-        switch (powerUpType) {
-            case 0:
-                upgrade = new SpeedBoost(row, col);
-                break;
-            case 1:
-                upgrade = new DoubleScore(row, col);
-                break;
-            case 2:
-                upgrade = new HealthRestore(row, col);
-                break;
-            case 3:
-                upgrade = new GhostKiller(row, col);
-                break;
-            default:
-                upgrade = new SpeedBoost(row, col);
-        }
-        
-        // Add to list
+
+        upgrade = switch (powerUpType) {
+            case 0 -> new SpeedBoost(row, col);
+            case 1 -> new DoubleScore(row, col);
+            case 2 -> new HealthRestore(row, col);
+            case 3 -> new GhostKiller(row, col);
+            default -> new SpeedBoost(row, col);
+        };
+
         upgrades.add(upgrade);
-        
-        // Update the board panel with the new power-up
-        if (boardPanel != null) {
-            boardPanel.addPowerUp(row, col, upgrade);
-        }
-        
-        return upgrade;
+
+        boardPanel.addPowerUp(row, col, upgrade);
     }
-    
-    /**
-     * Checks if the player has collected any power-ups
-     * 
-     * @param player The player
-     * @return The collected power-up or null if none
-     */
-    public Upgrade checkPowerUpCollection(Player player) {
-        int playerRow = player.getRow();
-        int playerCol = player.getCol();
+
+    public Upgrade checkPowerUpCollection(Pacman pacman) {
+        int playerRow = pacman.getRow();
+        int playerCol = pacman.getCol();
         Upgrade collectedUpgrade = null;
         
         for (Upgrade upgrade : upgrades) {
             if (!upgrade.isCollected() && upgrade.getRow() == playerRow && upgrade.getCol() == playerCol) {
-                // Collect the power-up
                 upgrade.setCollected(true);
                 collectedUpgrade = upgrade;
                 
@@ -98,71 +75,40 @@ public class UpgradeManager {
         
         return collectedUpgrade;
     }
-    
-    /**
-     * Activates a power-up effect
-     * 
-     * @param upgrade The power-up to activate
-     * @param player The player to apply the effect to
-     */
-    public void activatePowerUp(Upgrade upgrade, Player player) {
-        // Apply the effect
-        if (upgrade.applyEffect(player)) {
-            // If it has a duration, add to active effects
+
+    public void activatePowerUp(Upgrade upgrade, Pacman pacman) {
+        if (upgrade.applyEffect(pacman)) {
             if (upgrade.getDuration() > 0) {
                 long expirationTime = System.currentTimeMillis() + upgrade.getDuration();
                 activeEffects.put(upgrade, expirationTime);
             }
-            
-            // Notify about the power-up
-            System.out.println("Activated " + upgrade.getName() + "!");
-            
-            // For health restore, update the lives display in the game window
+
             if (upgrade instanceof HealthRestore && boardPanel != null) {
-                // Find the game window to update lives display
                 Component parent = boardPanel;
                 while (parent != null && !(parent instanceof GameWindow)) {
                     parent = parent.getParent();
                 }
                 
                 if (parent != null) {
-                    ((GameWindow) parent).updateLivesDisplay(player.getLives());
+                    ((GameWindow) parent).updateLivesDisplay(pacman.getLives());
                 }
             }
         }
     }
     
-    public List<Upgrade> updateActiveEffects(Player player, long currentTime) {
-        List<Upgrade> expiredEffects = new ArrayList<>();
-        
-        // Check for expired effects
+    public void updateActiveEffects(Pacman pacman, long currentTime) {
         for (Map.Entry<Upgrade, Long> entry : new HashMap<>(activeEffects).entrySet()) {
             Upgrade upgrade = entry.getKey();
             long expirationTime = entry.getValue();
             
             if (currentTime >= expirationTime) {
-                // Remove effect
-                upgrade.removeEffect(player);
+                upgrade.removeEffect(pacman);
                 activeEffects.remove(upgrade);
-                expiredEffects.add(upgrade);
-                
-                System.out.println(upgrade.getName() + " effect expired");
             }
         }
-        
-        return expiredEffects;
     }
-    
-    /**
-     * Removes all upgrades from the map and optionally replaces them with dots
-     * 
-     * @param fillWithDots Whether to replace the cleared spaces with dots
-     * @return The number of upgrades removed
-     */
-    public int removeAllUpgrades(boolean fillWithDots) {
-        int count = 0;
-        
-        // Create a copy of the list to avoid concurrent modification
+
+    public void removeAllUpgrades(boolean fillWithDots) {
         List<Upgrade> upgradesToRemove = new ArrayList<>(upgrades);
         
         for (Upgrade upgrade : upgradesToRemove) {
@@ -179,18 +125,12 @@ public class UpgradeManager {
                 if (fillWithDots) {
                     board.updateTile(row, col, '.');
                     if (boardPanel != null) {
-                        // The board panel needs to be refreshed to show the new dot
                         boardPanel.refreshTile(row, col);
                     }
                 }
-                
-                count++;
             }
         }
-        
-        // Clear the upgrades list
+
         upgrades.clear();
-        
-        return count;
     }
 }

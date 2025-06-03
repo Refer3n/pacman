@@ -5,7 +5,6 @@ import java.util.*;
 import java.time.LocalDateTime;
 import javax.swing.*;
 
-
 public class ScoreManager {
     private static final String SCORES_DIR = "scores";
     private static final String SCORES_FILE = SCORES_DIR + "/pacman_scores.ser";
@@ -13,7 +12,7 @@ public class ScoreManager {
     private static Score bestScore = null;
 
     public static void addScore(int scoreValue, int timePlayedSeconds) {
-        String playerName = promptForPlayerName(scoreValue);
+        String playerName = PlayerNameDialog(scoreValue);
         if (playerName == null || playerName.trim().isEmpty()) {
             playerName = "Anonymous";
         }
@@ -23,27 +22,16 @@ public class ScoreManager {
         updateBestScore(score);
     }
 
-    /**
-     * Prompts the user to enter their name for the score
-     * 
-     * @return The player's name, or null if canceled
-     */
-    private static String promptForPlayerName(int scoreValue) {
+    private static String PlayerNameDialog(int scoreValue) {
         return JOptionPane.showInputDialog(null, 
                 "Enter your name for the high score:", 
                 "Save Score, " +scoreValue + " points",
                 JOptionPane.PLAIN_MESSAGE);
     }
 
-    /**
-     * Gets all saved scores
-     * 
-     * @return List of all scores
-     */
     public static List<Score> getAllScores() {
         List<Score> scores = new ArrayList<>();
-        
-        // Create scores directory if it doesn't exist
+
         File directory = new File(SCORES_DIR);
         if (!directory.exists()) {
             directory.mkdirs();
@@ -51,18 +39,17 @@ public class ScoreManager {
         
         File file = new File(SCORES_FILE);
         if (!file.exists()) {
-            return scores; // Empty list if no file
+            return scores;
         }
         
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(SCORES_FILE))) {
             @SuppressWarnings("unchecked")
             List<Score> loadedScores = (List<Score>) ois.readObject();
             scores.addAll(loadedScores);
-            
-            // Update nextId and bestScore based on loaded scores
+
             for (Score score : scores) {
                 updateBestScore(score);
-                nextId = Math.max(nextId, score.getId() + 1);
+                nextId = Math.max(nextId, score.id() + 1);
             }
         } catch (IOException | ClassNotFoundException e) {
             System.err.println("Error loading scores: " + e.getMessage());
@@ -79,7 +66,7 @@ public class ScoreManager {
      */
     public static void deleteScore(int id) {
         List<Score> scores = getAllScores();
-        scores.removeIf(score -> score.getId() == id);
+        scores.removeIf(score -> score.id() == id);
         saveAllScores(scores);
         refreshBestScore();
     }
@@ -109,7 +96,7 @@ public class ScoreManager {
      * @return The total points earned across all games
      */
     public static int getTotalScore() {
-        return getAllScores().stream().mapToInt(Score::getValue).sum();
+        return getAllScores().stream().mapToInt(Score::value).sum();
     }
 
     /**
@@ -118,7 +105,7 @@ public class ScoreManager {
      * @return The total play time in seconds
      */
     public static int getTotalPlayTimeSeconds() {
-        return getAllScores().stream().mapToInt(Score::getTimePlayed).sum();
+        return getAllScores().stream().mapToInt(Score::timePlayed).sum();
     }
 
     public static String formatTime(int seconds) {
@@ -134,7 +121,7 @@ public class ScoreManager {
 
 
     private static void updateBestScore(Score score) {
-        if (bestScore == null || score.getValue() > bestScore.getValue()) {
+        if (bestScore == null || score.value() > bestScore.value()) {
             bestScore = score;
         }
     }

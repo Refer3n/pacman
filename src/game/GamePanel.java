@@ -6,12 +6,13 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import game.ghosts.Ghost;
+import game.pacman.Pacman;
 
 public class GamePanel extends JLayeredPane {
     public static final int CELL_SIZE = 30;
 
     private final Board board;
-    private Player player;
+    private Pacman pacman;
     private JLabel playerLabel;
     private BoardPanel boardPanel;
 
@@ -51,7 +52,7 @@ public class GamePanel extends JLayeredPane {
                 boardPanel.setBounds(0, 0, getWidth(), getHeight());
                 boardPanel.revalidate();
                 
-                if (player != null) {
+                if (pacman != null) {
                     float cellWidth = (float) getWidth() / board.getWidth();
                     float cellHeight = (float) getHeight() / board.getHeight();
 
@@ -68,8 +69,8 @@ public class GamePanel extends JLayeredPane {
         });
     }
 
-    public void setPlayer(Player player) {
-        this.player = player;
+    public void setPlayer(Pacman pacman) {
+        this.pacman = pacman;
         updatePlayerSprite();
         updatePlayerPosition();
     }
@@ -112,9 +113,9 @@ public class GamePanel extends JLayeredPane {
     }
 
     public void updatePlayerPosition() {
-        if (player != null && playerLabel != null) {
-            int x = Math.round(player.getPixelX());
-            int y = Math.round(player.getPixelY());
+        if (pacman != null && playerLabel != null) {
+            int x = Math.round(pacman.getPixelX());
+            int y = Math.round(pacman.getPixelY());
             playerLabel.setLocation(x, y);
 
             boardPanel.repaint();
@@ -140,8 +141,8 @@ public class GamePanel extends JLayeredPane {
     }
 
     public void updatePlayerSprite() {
-        if (player != null && playerLabel != null) {
-            ImageIcon icon = player.getCurrentIcon();
+        if (pacman != null && playerLabel != null) {
+            ImageIcon icon = pacman.getCurrentIcon();
             if (icon != null) {
                 playerLabel.setIcon(icon);
             }
@@ -161,18 +162,13 @@ public class GamePanel extends JLayeredPane {
             }
         }
     }
-                    
-                    // Power-ups are now rendered in the BoardPanel's cell components
 
     public void clearDot(int row, int col) {
         if (row >= 0 && row < board.getHeight() && col >= 0 && col < board.getWidth()) {
             boardPanel.clearDot(row, col);
         }
     }
-    
-    /**
-     * Gets the board panel
-     */
+
     public BoardPanel getBoardPanel() {
         return boardPanel;
     }
