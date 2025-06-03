@@ -16,8 +16,8 @@ public class GamePanel extends JLayeredPane {
     private JLabel playerLabel;
     private BoardPanel boardPanel;
 
-    private List<Ghost> ghosts = new ArrayList<>();
-    private List<JLabel> ghostLabels = new ArrayList<>();
+    private final List<Ghost> ghosts = new ArrayList<>();
+    private final List<JLabel> ghostLabels = new ArrayList<>();
 
     private static final int BOARD_LAYER = 0;
     private static final int GHOST_LAYER = 1;
@@ -69,9 +69,7 @@ public class GamePanel extends JLayeredPane {
         ghostLabels.add(ghostLabel);
 
         ImageIcon icon = ghost.getCurrentIcon();
-        if (icon != null) {
-            ghostLabel.setIcon(icon);
-        }
+        ghostLabel.setIcon(icon);
 
         int x = Math.round(ghost.getPixelX());
         int y = Math.round(ghost.getPixelY());
@@ -82,9 +80,6 @@ public class GamePanel extends JLayeredPane {
         return ghosts;
     }
 
-    /**
-     * Resets all ghosts to their starting positions
-     */
     public void resetGhosts() {
         for (Ghost ghost : ghosts) {
             ghost.reset();
@@ -94,53 +89,40 @@ public class GamePanel extends JLayeredPane {
     }
 
     public void updatePlayerPosition() {
-        if (pacman != null && playerLabel != null) {
-            int x = Math.round(pacman.getPixelX());
-            int y = Math.round(pacman.getPixelY());
-            playerLabel.setLocation(x, y);
+        int x = Math.round(pacman.getPixelX());
+        int y = Math.round(pacman.getPixelY());
+        playerLabel.setLocation(x, y);
 
-            boardPanel.repaint();
-            repaint();
-        }
+        boardPanel.repaint();
+        repaint();
     }
 
     public void updateGhostPositions() {
-        if (ghostLabels != null && !ghosts.isEmpty()) {
-            for (int i = 0; i < ghosts.size(); i++) {
-                Ghost ghost = ghosts.get(i);
-                JLabel ghostLabel = ghostLabels.get(i);
+        for (int i = 0; i < ghosts.size(); i++) {
+            Ghost ghost = ghosts.get(i);
+            JLabel ghostLabel = ghostLabels.get(i);
 
-                // Use pixel coordinates for smooth movement
-                int x = Math.round(ghost.getPixelX());
-                int y = Math.round(ghost.getPixelY());
-                ghostLabel.setLocation(x, y);
-            }
-
-            boardPanel.repaint();
-            repaint();
+            int x = Math.round(ghost.getPixelX());
+            int y = Math.round(ghost.getPixelY());
+            ghostLabel.setLocation(x, y);
         }
+
+        boardPanel.repaint();
+        repaint();
     }
 
     public void updatePlayerSprite() {
-        if (pacman != null && playerLabel != null) {
-            ImageIcon icon = pacman.getCurrentIcon();
-            if (icon != null) {
-                playerLabel.setIcon(icon);
-            }
-        }
+        ImageIcon icon = pacman.getCurrentIcon();
+        playerLabel.setIcon(icon);
     }
 
     public void updateGhostSprites() {
-        if (ghostLabels != null && !ghosts.isEmpty()) {
-            for (int i = 0; i < ghosts.size(); i++) {
-                Ghost ghost = ghosts.get(i);
-                JLabel ghostLabel = ghostLabels.get(i);
+        for (int i = 0; i < ghosts.size(); i++) {
+            Ghost ghost = ghosts.get(i);
+            JLabel ghostLabel = ghostLabels.get(i);
 
-                ImageIcon icon = ghost.getCurrentIcon();
-                if (icon != null) {
-                    ghostLabel.setIcon(icon);
-                }
-            }
+            ImageIcon icon = ghost.getCurrentIcon();
+            ghostLabel.setIcon(icon);
         }
     }
 
