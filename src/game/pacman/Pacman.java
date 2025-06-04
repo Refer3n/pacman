@@ -49,7 +49,7 @@ public class Pacman {
     private int scoreMultiplier = 1;
     private int lives = 3;
     private boolean ghostKillerMode = false;
-    
+
     public Pacman(Board board, int startRow, int startCol) {
         this.board = board;
         this.row = startRow;
@@ -67,26 +67,23 @@ public class Pacman {
     private void loadAnimationFrames() {
         try {
             directionFrames = new BufferedImage[4][2];
+            String[] directions = {"right", "down", "left", "up"};
 
-            directionFrames[RIGHT][0] = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/assets/pacman/right_half.png")));
-            directionFrames[RIGHT][1] = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/assets/pacman/right_full.png")));
+            for (int i = 0; i < directions.length; i++) {
+                directionFrames[i][0] = loadImage("/assets/pacman/" + directions[i] + "_half.png");
+                directionFrames[i][1] = loadImage("/assets/pacman/" + directions[i] + "_full.png");
+            }
 
-            directionFrames[DOWN][0] = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/assets/pacman/down_half.png")));
-            directionFrames[DOWN][1] = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/assets/pacman/down_full.png")));
-
-            directionFrames[LEFT][0] = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/assets/pacman/left_half.png")));
-            directionFrames[LEFT][1] = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/assets/pacman/left_full.png")));
-
-            directionFrames[UP][0] = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/assets/pacman/up_half.png")));
-            directionFrames[UP][1] = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/assets/pacman/up_full.png")));
-
-            closedMouthFrame = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/assets/pacman/closed.png")));
-
-        } catch (IOException | NullPointerException e) {
+            closedMouthFrame = loadImage("/assets/pacman/closed.png");
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
         prepareAnimationIcons();
+    }
+
+    private BufferedImage loadImage(String path) throws IOException {
+        return ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(path)));
     }
 
     private void prepareAnimationIcons() {
@@ -95,26 +92,16 @@ public class Pacman {
     }
 
     private void updateDirectionIcons() {
-        if (directionFrames != null && closedMouthFrame != null) {
-            int size = GamePanel.CELL_SIZE;
+        if (directionFrames == null || closedMouthFrame == null) return;
 
-            if (gamePanel != null) {
-                float cellWidth = (float) gamePanel.getWidth() / board.getWidth();
-                float cellHeight = (float) gamePanel.getHeight() / board.getHeight();
-
-                size = Math.min((int)cellWidth, (int)cellHeight);
-            }
-    
-            Image halfOpen = directionFrames[direction][0].getScaledInstance(size, size, Image.SCALE_SMOOTH);
-            Image fullOpen = directionFrames[direction][1].getScaledInstance(size, size, Image.SCALE_SMOOTH);
-            Image closed = closedMouthFrame.getScaledInstance(size, size, Image.SCALE_SMOOTH);
-
-            animationIcons[0] = new ImageIcon(halfOpen);
-            animationIcons[1] = new ImageIcon(fullOpen);
-            animationIcons[2] = new ImageIcon(closed);
-        }
+        animationIcons[0] = scaleIcon(directionFrames[direction][0]);
+        animationIcons[1] = scaleIcon(directionFrames[direction][1]);
+        animationIcons[2] = scaleIcon(closedMouthFrame);
     }
 
+    private ImageIcon scaleIcon(BufferedImage img) {
+        return new ImageIcon(img.getScaledInstance(CELL_SIZE, CELL_SIZE, Image.SCALE_SMOOTH));
+    }
 
     public void update(long currentTime) {
         float deltaTime = (currentTime - lastMoveTime) / 1000.0f;
@@ -132,7 +119,7 @@ public class Pacman {
 
         if (nextDirection != direction) {
             boolean isOppositeDirection =
-                    (direction == RIGHT && nextDirection == LEFT) ||
+                            (direction == RIGHT && nextDirection == LEFT) ||
                             (direction == LEFT && nextDirection == RIGHT) ||
                             (direction == UP && nextDirection == DOWN) ||
                             (direction == DOWN && nextDirection == UP);
@@ -176,11 +163,6 @@ public class Pacman {
             }
         }
     }
-
-    public int getCurrentFrame() {
-        return currentFrame;
-    }
-
     public void setAnimationFrame(int frame) {
         if (frame >= 0 && frame < 3) {
             this.currentFrame = frame;
@@ -233,7 +215,6 @@ public class Pacman {
     }
 
     private void move(int direction, float deltaTime) {
-        // Apply speed multiplier from power-ups
         float distance = PLAYER_SPEED * speedMultiplier * deltaTime;
 
         float oldPixelX = pixelX;
@@ -268,12 +249,10 @@ public class Pacman {
 
                     if (gamePanel != null) {
                         gamePanel.clearDot(row, col);
-                        
-                        // Award points for eating dot
+
                         int basePoints = 10;
                         int points = basePoints * scoreMultiplier;
-                        
-                        // Update score in game window via game panel
+
                         if (gamePanel.getParent() instanceof JPanel) {
                             Component parent = gamePanel.getParent();
                             while (parent != null) {
@@ -308,30 +287,11 @@ public class Pacman {
         }
     }
 
-    public int getRow() {
-        return row;
-    }
+    public int getRow() { return row; }
+    public int getCol() { return col; }
 
-    public int getCol() {
-        return col;
-    }
-
-
-    public float getPixelX() {
-        if (gamePanel != null) {
-            float cellWidthRatio = (float) gamePanel.getWidth() / (board.getWidth() * CELL_SIZE);
-            return pixelX * cellWidthRatio;
-        }
-        return pixelX;
-    }
-
-    public float getPixelY() {
-        if (gamePanel != null) {
-            float cellHeightRatio = (float) gamePanel.getHeight() / (board.getHeight() * CELL_SIZE);
-            return pixelY * cellHeightRatio;
-        }
-        return pixelY;
-    }
+    public float getPixelX() { return pixelX; }
+    public float getPixelY() { return pixelY; }
 
     public void reset(int startRow, int startCol) {
         this.row = startRow;
@@ -386,5 +346,4 @@ public class Pacman {
     public boolean isGhostKillerMode() {
         return ghostKillerMode;
     }
-
 }

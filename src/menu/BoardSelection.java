@@ -76,18 +76,10 @@ public class BoardSelection extends JFrame {
     private ActionListener createBoardSelectionListener(String boardSize) {
         return e -> {
             Board selectedBoard = boardManager.getBoard(boardSize);
-            if (selectedBoard != null) {
-                redirectToGame = true;
-                dispose();
-                new GameWindow(selectedBoard);
-            } else {
-                JOptionPane.showMessageDialog(
-                    this,
-                    "Board not available: " + boardSize,
-                    "Board Selection Error",
-                    JOptionPane.ERROR_MESSAGE
-                );
-            }
+
+            redirectToGame = true;
+            dispose();
+            new GameWindow(selectedBoard);
         };
     }
 }

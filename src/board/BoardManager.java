@@ -11,7 +11,7 @@ public class BoardManager {
     }
 
     private void loadBoards() {
-        String[] files = {"small.txt"};
+        String[] files = {"small.txt", "medium.txt", "large.txt"};
 
         for (String fileName : files) {
             try (InputStream is = getClass().getResourceAsStream("/assets/maps/" + fileName);
@@ -30,9 +30,5 @@ public class BoardManager {
 
     public Board getBoard(String name) {
         return boards.get(name);
-    }
-
-    public List<Board> getAllBoards() {
-        return new ArrayList<>(boards.values());
     }
 }

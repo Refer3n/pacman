@@ -39,7 +39,6 @@ public class HighScores extends JFrame {
         mainPanel.setBackground(Color.BLACK);
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Create scores section with JList
         List<Score> allScores = ScoreManager.getAllScores();
         
         if (allScores.isEmpty()) {
@@ -48,7 +47,6 @@ public class HighScores extends JFrame {
             mainPanel.add(createScoresListPanel(allScores), BorderLayout.CENTER);
         }
 
-        // Create statistics panel
         statsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 10));
         statsPanel.setBackground(Color.BLACK);
         statsPanel.setBorder(BorderFactory.createTitledBorder(
@@ -98,8 +96,7 @@ public class HighScores extends JFrame {
             dispose();
             new BoardSelection();
         });
-        
-        // Add components with some spacing
+
         emptyPanel.add(Box.createVerticalGlue());
         emptyPanel.add(noScores);
         emptyPanel.add(Box.createVerticalStrut(20));
@@ -112,17 +109,13 @@ public class HighScores extends JFrame {
     private JPanel createScoresListPanel(List<Score> scores) {
         JPanel listPanel = new JPanel(new BorderLayout(0, 10));
         listPanel.setBackground(Color.BLACK);
-        
-        // Create a simple list model and populate it
+
         DefaultListModel<String> listModel = new DefaultListModel<>();
-        
-        // Add header
+
         listModel.addElement(String.format("%-25s %-15s %-15s", "Name", "Score", "Time Played"));
-        
-        // Add a separator
+
         listModel.addElement("--------------------------------------------------");
-        
-        // Add all scores
+
         for (Score score : scores) {
             String formattedScore = String.format("%-25s %-15d %-15s", 
                 score.playerName(),
@@ -130,17 +123,15 @@ public class HighScores extends JFrame {
                 ScoreManager.formatTime(score.timePlayed()));
             listModel.addElement(formattedScore);
         }
-        
-        // Create JList with the model - non-selectable
+
         JList<String> scoresList = new JList<>(listModel);
         scoresList.setBackground(Color.BLACK);
         scoresList.setForeground(GOLD);
         scoresList.setFont(new Font("Monospaced", Font.PLAIN, 16));
         scoresList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         scoresList.setFixedCellHeight(30);
-        scoresList.setEnabled(false); // Make it non-selectable
-        
-        // Add the list to a scroll pane
+        scoresList.setEnabled(false);
+
         JScrollPane scrollPane = new JScrollPane(scoresList);
         scrollPane.setBackground(Color.BLACK);
         scrollPane.getViewport().setBackground(Color.BLACK);
@@ -151,15 +142,12 @@ public class HighScores extends JFrame {
                 new Font("SansSerif", Font.BOLD, 18),
                 GOLD
         ));
-        
-        // Add components to panel
+
         listPanel.add(scrollPane, BorderLayout.CENTER);
         
         return listPanel;
     }
-    
-    // Method removed
-    
+
     private void updateStats() {
         if (statsPanel != null) {
             statsPanel.removeAll();
